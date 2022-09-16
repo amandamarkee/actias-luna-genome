@@ -1,4 +1,4 @@
-# actias-luna-genome
+# _Actias luna_ Genome Project
 Genome assembly and annotation workflow for the luna moth, _Actias luna_. This repository format was modified from YiMing Weng's [genome assembly and annotation repository](https://github.com/yimingweng/Kely_genome_project) for the tomato pinworm _Keiferia lycopersicella_.
 
 ## Background
