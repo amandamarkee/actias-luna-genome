@@ -1,0 +1,482 @@
+# A.luna HiFi Genome Assembly
+# Amanda Markee
+# 6-28-2022  
+
+# goals of this document are to record
+# notes and questions about assembling A.luna HiFi genomic data
+# from ICBR using hifiasm
+
+# working in directory below
+
+/blue/kawahara/amanda.markee/ICBR/hifiasm
+/blue/kawahara/amanda.markee/insect_genomics_2022
+
+
+###########################################################
+###### ICBR DATA DUMP TO CLUSTER / FILE EXPLINATIONS ######
+###########################################################
+
+# once ICBR has completed the HiFi run, ICBR NS-core will email you regarding
+# your run's report, and metadate for your sequencing run.
+# the ICBR Bioinformatics-core will email you to set up data delivery 
+# for hipergator, these are set-up instructions: 
+# https://biotech.ufl.edu/wp-content/uploads/2022/04/Configuring-Globus-with-ICBR-as-a-HiPerGator-Account-Holder.pdf
+
+# directory for NGS NS-2497 data delivery
+
+/blue/kawahara/amanda.markee/ICBR/NS-2497
+
+# 0000000200 = folder that contains full completed hifi reads w/metadata
+# 0000000205 = folder that contains css / .json  
+# 1_A05 = folder that contains raw data, and ccs reports
+
+
+
+##############################################
+### GENOME ASSEMBLY WITH HIFIASM TUTORIAL ####
+##############################################
+
+# working directory for assembly with hifiasm
+/blue/kawahara/amanda.markee/ICBR/hifiasm
+
+# hifiasm documentation explaining input parameters
+https://hifiasm.readthedocs.io/en/latest/pa-assembly.html
+
+# hifiasm documentation explaining output files
+https://hifiasm.readthedocs.io/en/latest/interpreting-output.html
+
+# script for hifiasm with aggressive duplicate purging (option -l 2), based on Plodia genome paper methods
+
+#!/bin/bash
+#SBATCH --job-name=markee_hifi_assembly
+#SBATCH -o %A_%a.2022-06-14.hifiasm_assembly.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH -c 32
+#SBATCH --mem-per-cpu=10gb
+#SBATCH -t 30:00:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara-b
+
+date;hostname;pwd
+
+module load ufrc
+module load hifiasm
+
+hifiasm -o /blue/kawahara/amanda.markee/ICBR/hifiasm/aclu_hifi_assembly_06-14-2022.asm 
+-l 2 -t 32 /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz
+
+# output files moved to following directory
+/blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files
+
+
+
+#############################################
+### GENOME ASSEMBLY STATISTICS TUTORIAL ####
+############################################
+
+# once genome assembly has completed running, you have to get assembly stats
+# and BUSCO score to determine genome quality and completeness.
+
+# first copy assembly stats script into directory with final assembly
+
+#!/usr/bin/env python
+
+import numpy as np
+from itertools import groupby
+import json
+import sys
+
+
+def fasta_iter(fasta_file):
+    """Takes a FASTA file, and produces a generator of Header and Sequences.
+    This is a memory-efficient way of analyzing a FASTA files -- without
+    reading the entire file into memory.
+
+    Parameters
+    ----------
+    fasta_file : str
+        The file location of the FASTA file
+
+    Returns
+    -------
+    header: str
+        The string contained in the header portion of the sequence record
+        (everything after the '>')
+    seq: str
+        The sequence portion of the sequence record
+    """
+
+    fh = open(fasta_file)
+    fa_iter = (x[1] for x in groupby(fh, lambda line: line[0] == ">"))
+    for header in fa_iter:
+        # drop the ">"
+        header = next(header)[1:].strip()
+        # join all sequence lines to one.
+        seq = "".join(s.upper().strip() for s in next(fa_iter))
+        yield header, seq
+
+
+def read_genome(fasta_file):
+    """Takes a FASTA file, and produces 2 lists of sequence lengths. It also
+    calculates the GC Content, since this is the only statistic that is not
+    calculated based on sequence lengths.
+
+    Parameters
+    ----------
+    fasta_file : str
+        The file location of the FASTA file
+
+    Returns
+    -------
+    contig_lens: list
+        A list of lengths of all contigs in the genome.
+    scaffold_lens: list
+        A list of lengths of all scaffolds in the genome.
+    gc_cont: float
+        The percentage of total basepairs in the genome that are either G or C.
+    """
+
+    gc = 0
+    total_len = 0
+    contig_lens = []
+    scaffold_lens = []
+    for _, seq in fasta_iter(fasta_file):
+        scaffold_lens.append(len(seq))
+        if "NN" in seq:
+            contig_list = seq.split("NN")
+        else:
+            contig_list = [seq]
+        for contig in contig_list:
+            if len(contig):
+                gc += contig.count('G') + contig.count('C')
+                total_len += len(contig)
+                contig_lens.append(len(contig))
+    gc_cont = (gc / total_len) * 100
+    return contig_lens, scaffold_lens, gc_cont
+
+
+def calculate_stats(seq_lens, gc_cont):
+    stats = {}
+    seq_array = np.array(seq_lens)
+    stats['sequence_count'] = seq_array.size
+    stats['gc_content'] = gc_cont
+    sorted_lens = seq_array[np.argsort(-seq_array)]
+    stats['longest'] = int(sorted_lens[0])
+    stats['shortest'] = int(sorted_lens[-1])
+    stats['median'] = np.median(sorted_lens)
+    stats['mean'] = np.mean(sorted_lens)
+    stats['total_bps'] = int(np.sum(sorted_lens))
+    csum = np.cumsum(sorted_lens)
+    for level in [10, 20, 30, 40, 50]:
+        nx = int(stats['total_bps'] * (level / 100))
+        csumn = min(csum[csum >= nx])
+        l_level = int(np.where(csum == csumn)[0])
+        n_level = int(sorted_lens[l_level])
+
+        stats['L' + str(level)] = l_level
+        stats['N' + str(level)] = n_level
+    return stats
+
+
+if __name__ == "__main__":
+    infilename = sys.argv[1]
+    contig_lens, scaffold_lens, gc_cont = read_genome(infilename)
+    contig_stats = calculate_stats(contig_lens, gc_cont)
+    scaffold_stats = calculate_stats(scaffold_lens, gc_cont)
+    stat_output = {'Contig Stats': contig_stats,
+                   'Scaffold Stats': scaffold_stats}
+    print(json.dumps(stat_output, indent=2, sort_keys=True))
+
+# call this script assemblystats.py
+
+# THEN change permissions in your folder as follows:
+chmod +x scriptname.py
+
+# run this line of code in the terminal to produce a FASTA file from the GFA file 
+
+# from primary contig ctg file 
+awk '/^S/{print ">"$2;print $3}' aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.gfa > aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa 
+
+# THEN run the script on your fasta file of the gfa scriptfilepath/scirptname.py nameofassembly.fa
+/blue/kawahara/amanda.markee/ICBR/hifiasm assemblystats.py /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa
+
+# SAVE these results as a text file
+./assemblystats.py aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa >> aclu_hifi_assembly_06-14-2022.txt
+
+
+
+#####################################################################
+########################### BUSCO TUTORIAL ##########################
+#####################################################################
+
+# after running genome statistics, you can run BUSCO (v5) to measure genome completeness
+# BUSCO is a standardized genome stat, see the following papers for reference
+
+Emily Ellis Butterfly Genome Assembly Paper (Giga Science)
+https://academic.oup.com/gigascience/article/10/6/giab041/6291117
+
+Paul Frandsen Long Read Seqs (GBE)
+https://academic.oup.com/gbe/article/13/8/evab138/6307268
+
+Xuankun Li Neomicropteryx HiFi (GBE)
+https://academic.oup.com/gbe/advance-article/doi/10.1093/gbe/evab229/6380144?login=true
+
+## FIRST step, make a BUSCO directory, and copy the HPG config file to this directory
+## here is an example of the path i used, and the steps i took
+/blue/kawahara/amanda.markee/prelim_luna_dge/genome_assembly/spades/spades_assembly_all_illumina/K77/
+
+mkdir BUSCO
+cp $HPC_BUSCO_CONF/config.ini .
+
+## then edit slurm submission script to ensure that right paths are set for your genome assembly, and busco contig file
+
+#!/bin/bash
+#SBATCH --job-name=busco
+#SBATCH -o Luna_busco5_endo_%j.out
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=2gb
+#SBATCH -t 4:00:00
+#SBATCH -c 6
+
+export BUSCO_CONFIG_FILE=/blue/kawahara/amanda.markee/ICBR/BUSCO/config.ini
+export AUGUSTUS_CONFIG_PATH=/blue/kawahara/amanda.markee/ICBR/BUSCO/
+
+echo $BUSCO_CONFIG_FILE
+
+module load busco/5.2.0
+
+busco -f -i /blue/kawahara/amanda.markee/ICBR/hifiasm/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa \
+ -o BUSCO_Luna_endopterygotap -l /data/reference/busco/v5/lineages/endopterygota_odb10   \
+ -m genome -c 6
+
+#	endopterygota_odb10
+#	insecta_odb10
+
+
+## output will look like this, where C is complete, M is missing
+
+***** Results: *****
+
+	C:99.4%[S:99.0%,D:0.4%],F:0.2%,M:0.4%,n:2124	   
+	2111	Complete BUSCOs (C)			   
+	2102	Complete and single-copy BUSCOs (S)	   
+	9	Complete and duplicated BUSCOs (D)	   
+	5	Fragmented BUSCOs (F)			   
+	8	Missing BUSCOs (M)			   
+	2124	Total BUSCO groups searched	
+	
+	
+	
+##################################################################
+############### GenomeScope (kmer/Genome Size Estimation #########
+##################################################################
+
+## To run in development mode, directly in command line. Command format is input path, output file name, then output file path
+kmc -k21 -t10 -m64 -ci1 -cs10000 /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz kmer_count_aluna_genome.kmc /blue/kawahara/amanda.markee/insect_genomics_2022/kmc_temp_dir_dev/kmer_count_aluna_genome.tmp
+
+--------------------------------------
+
+## To run in a SLURM submission, here is the script:
+
+#!/bin/bash
+#SBATCH --job-name=Aluna_kmc
+#SBATCH -o Aluna_kmc_%j.out
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH -c 3
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 00:30:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara-b
+
+module load kmc/3.2.1
+
+# create directory for kmc temporary files
+mkdir kmc_tmp
+ 
+kmc -k21 /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz 21mers kmc_tmp
+
+# Having the k-mers counted it is possible to dump KMC binary database to textual form with kmc_tools.
+
+kmc_tools transform 21mers dump 21mers.txt
+
+kmc_tools transform 21mers histogram 21mer_reads.histo
+
+--------------------------------------
+
+## once GenomeScope is done, your output file ending with .histo can be loaded directly into GenomeScope GUI
+## MAKE SURE to use GenomeScope version 2.0 http://qb.cshl.edu/genomescope/genomescope2.0/
+
+## Amanda’s Genome Scope kmer size estimation results: 
+http://genomescope.org/genomescope2.0/analysis.php?code=yZmFQCw5YGmWjOazjOE7
+
+
+
+#####################################################################
+########################### BLOB TOOLS ##############################
+#####################################################################
+
+## BlobTools script information from Keating Godfrey
+## Scripts and guidance from Shova Mishra, postdoc in Peter DiGennaro lab, shovamishra@ufl.edu
+
+Resources:
+https://blobtools.readme.io/docs/seqfilter
+https://github.com/DRL/blobtools
+https://blobtools.readme.io/docs/view
+
+## We can use Blob Tools to assess genome contamination (version 1.0)
+
+## To run blob tools we need three files:
+## (1) nodes.dmp and names.dmp files (from NCBI tax dump) 
+## (2) .bam alignment file (from minimap2 script) 
+## (3) .nt blast match file (from NCBI megablast)
+
+
+
+## (1) To download NCBI taxdump and create nodes.dmp and names.dmp (copy and paste this command in terminal, it will create data directory and create files)
+
+wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz -P data/
+tar zxf data/taxdump.tar.gz -C data/ nodes.dmp names.dmp
+. blobtools nodesdb --nodes data/nodes.dmp --names data/names.dmp
+
+
+## (2)
+
+
+##-----------------START minimap2 SCRIPT ---------------------##
+
+#!/bin/sh
+#SBATCH --job-name=Al_minimap2
+#SBATCH --output=Al_minimap2_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=10
+#SBATCH --mem=60gb
+#SBATCH --time=08:00:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara
+
+pwd; hostname; date
+
+module load minimap2
+
+minimap2 -ax map-pb /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz > Al.aln.sam
+
+module load samtools
+#convert SAM file to BAM file
+samtools view -S -b Al.aln.sam > Al.aln.bam
+
+#Use samtools sort to convert the BAM file to a coordinate sorted BAM file
+samtools sort Al.aln.bam > Al.aln.sorted.bam
+
+#index a genome sorted bAM file for quick alignment
+samtools index Al.aln.sorted.bam > Al_indexed_sorted_bam
+
+##-----------------END minimap2 SCRIPT ---------------------##
+
+## bowtie is an alternative to minimap2
+
+##-----------------START bowtie2 SCRIPT ---------------------##
+
+#!/bin/sh
+#SBATCH --job-name=Al_bowtie2
+#SBATCH --output=bowtie_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=20
+#SBATCH --mem=60gb
+#SBATCH --time=8-00:00:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara
+
+pwd; hostname; date
+
+module load bowtie2
+
+#index preliminary contigs
+bowtie2-build /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/bowtie
+
+#to map raw reads to preliminary contigs
+bowtie2 -p 8 -x /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/bowtie -U /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz -S Al_output.sam
+
+module load samtools
+#convert SAM file to BAM file
+samtools view -S -b Al_output.sam > Al_output.bam
+
+#Use samtools sort to convert the BAM file to a coordinate sorted BAM file
+samtools sort Al_output.bam > Al_output.sorted.bam
+
+#index a genome sorted bAM file for quick alignment
+samtools index Al_output.sorted.bam > Al_indexed_sorted_bam
+
+##-----------------END bowtie2 SCRIPT ---------------------##
+
+
+## (3) Get .nt file from megablast script
+
+## For the output format you are asking for format 6 = tabular
+## and you need to request 
+## 1st column: sequenceID (qseqid)
+## 2nd column: NCBI TaxID (staxids)
+## 3rd column: score (bitscore)
+
+## You can request in inclusion of any other variable from NCBI after these; blobtools will ignore.
+
+##-----------------START megablast SCRIPT ---------------------##
+#!/bin/sh
+#SBATCH --job-name=Al_megablast
+#SBATCH --output=Al_megablast_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amarkee@floridamuseum.ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=20gb
+#SBATCH --time 8-00:00:00
+#SBATCH --qos=kawahara
+#SBATCH --account=kawahara
+
+pwd; hostname; date
+
+module load ncbi_blast
+blastn -db nt -task megablast -query /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa -out Aluna_megablast.nt -evalue 1e-5 -outfmt "6 qseqid staxids bitscore sgi sskingdoms sscinames" -max_target_seqs 1 -num_threads=16
+
+##-----------------END megablast SCRIPT ---------------------##
+
+
+## Now you can run blobtools and create plots
+## I first turned my .nt file in to .txt file because I thought I was having issues with the .nt file
+## Not sure that was really a problem
+
+mv Aluna_megablast.nt Aluna_megablast.txt
+
+##-----------------START blobtools SCRIPT ---------------------##
+
+#!/bin/sh
+#SBATCH --job-name=Hl_megablast
+#SBATCH --output=Hl_megablast_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=rkeating.godfrey@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=20gb
+#SBATCH --time 00:20:00
+#SBATCH --qos=kawahara
+#SBATCH --account=kawahara
+
+pwd; hostname; date
+
+## Run blob tools
+ 
+module load blobtools/1.0
+
+blobtools create -i /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa -b Al_indexed_sorted_bam -t Aluna_megablast.nt --nodes nodes.dmp --names names.dmp -o result (this command worked)
+
+## You can then view and plot
+blobtools view -i result.blobDB.json
+blobtools plot -i result.blobDB.json
+
+##-----------------END blobtools SCRIPT ---------------------##
