@@ -16,11 +16,11 @@ This section describes the methods I used for both assembling and annotating the
 
 ### Read Quality Assessment (FastQC)
 
-### Read Cleanning and Adapter Trimming (TBD)
+### Contig Assembly [(hifiasm)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#09192022-genome-assembly-with-hifiasm)
 
-### Contig Assembly (HiFiAsm)
+### Assembly Quality Assessment [(BUSCO)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10032022-genome-completeness-with-busco)
 
-### Polishing and Purging Haplotigs (AssemblyStats.py)
+### Polishing and Purging Haplotigs [(assemblystats.py)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10032022-genome-assembly-quality-assessment-with-assemblystatspy)
 
 ### Feature Annotation (TBD: Maker/Baker?)
 
