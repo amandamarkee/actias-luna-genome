@@ -72,7 +72,7 @@ hifiasm -o /blue/kawahara/amanda.markee/ICBR/hifiasm/aclu_hifi_assembly_06-14-20
 ```
 
 
-## **10/03/2022; Genome Assembly with hifiasm**
+## **10/03/2022; Genome Assembly Quality Assessment with assemblystats.py**
 
 - After assembly with hifiasm, we can assess assembly quality using the [assemblystats.py script](https://github.com/MikeTrizna/assembly_stats/tree/0.1.4) created by Mike Trizna.
 - The version of assemblystats.py used here was modified by Paul Frandsen (Brigham Young University).
