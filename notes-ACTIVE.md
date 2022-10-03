@@ -40,9 +40,59 @@ cd /blue/kawahara/amanda.markee/ICBR/NS-2497
   - 0000000205 = folder that contains css / .json  
   - 1_A05 = folder that contains raw data, and ccs reports
 
+## **09/19/2022; Raw Read Quality Assessment with FastQC**
+-[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is a quality assessment tool for next generation sequencing, often used to assess raw reed quality and highlight problem areas in the form of visualizations (see results below).
+
+First, to run FastQC, create a directory for the output data and script.
+```
+mkdir fastqc_raw
+```
+
+I then copied the following script into the new directory that contained my raw hifi reads:
+```
+#!/bin/bash
+#SBATCH --job-name=A_luna_fastqc
+#SBATCH --output=A_luna_raw_reads_fastqc-%j.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=2gb
+#SBATCH --time=02:00:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara
+
+## This script runs a fast qc on the fastq file output from PacBio HiFi Sequel IIe
+
+## load fastqc module
+module load fastqc
+
+## run fastqc on the data 
+fastqc m64219e_220210_175238.hifi_reads.fastq.gz
+```
+
+The FastQC output files include an .html file, which will contain visualizations for the following results:
+- Basic Statistics
+- Per base sequence quality
+- Per sequence quality scores (Phred scores)
+- Per base sequence content
+- Per sequence GC content
+- Per base N content
+- Sequence Length Distribution
+- Sequence Duplication Levels
+- Overrepresented sequences
+- Adapter content
+
+
+![Screen Shot 2022-10-03 at 12 19 27 PM](https://user-images.githubusercontent.com/56971761/193628513-bdf8ac54-fd40-4d6d-bd21-3fc35f2a1766.png)
+
+![Screen Shot 2022-10-03 at 12 19 37 PM](https://user-images.githubusercontent.com/56971761/193628527-02fc686c-ed19-4043-b758-22dbdc1e1fb0.png)
+
+
+
 ## **09/19/2022; Genome Assembly with hifiasm**
 
-- [hifiasm](https://hifiasm.readthedocs.io/en/latest/) is a fast and easy haplotype-resolved de novo assembly software for PacBio HiFi reads
+ - [hifiasm](https://hifiasm.readthedocs.io/en/latest/) is a fast and easy haplotype-resolved de novo assembly software for PacBio HiFi reads
  - hifiasm documentation explaining input parameters: https://hifiasm.readthedocs.io/en/latest/pa-assembly.html
  - hifiasm documentation explaining output files: https://hifiasm.readthedocs.io/en/latest/interpreting-output.html
  - Script for hifiasm with aggressive duplicate purging (option -l 2)
