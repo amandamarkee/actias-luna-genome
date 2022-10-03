@@ -14,7 +14,7 @@ Genome assembly and annotation workflow for the luna moth, _Actias luna_. This r
 ## General Workflow
 This section describes the methods I used for both assembling and annotating the luna moth genome from PacBio High Fidelity (HiFi) reads. Methods in this repository follow those described in [Kawahara et al., 2022](https://gigabytejournal.com/articles/64)
 
-### Read Quality Assessment (FastQC)
+### Read Quality Assessment [(FastQC)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#09192022-raw-read-quality-assessment-with-fastqc)
 
 ### Contig Assembly [(hifiasm)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#09192022-genome-assembly-with-hifiasm)
 
