@@ -207,6 +207,10 @@ Save results as a text file as shown.
 ```
 ./assemblystats.py aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa >> aclu_hifi_assembly_06-14-2022.txt
 ```
+The results will look like the following table:
+
+![Screen Shot 2022-10-03 at 11 54 34 AM](https://user-images.githubusercontent.com/56971761/193622529-568bc8f8-f936-4995-91c8-989f8da21759.png)
+
 
 ## **10/03/2022; Genome Completeness with BUSCO**
 
@@ -264,8 +268,61 @@ Once BUSCO has finished running, a short summary output table will show you your
 	2124	Total BUSCO groups searched
 ```
 
+## **10/03/2022; Genome Size Estimation (kmer) with KMC and GenomeScope**
+
+- To estimate the size, heterozygosity and repetitiveness of the genome, I used a kmer distribution-based approach following the methods described in [Kawahara et al. 2022 publcation](https://gigabytejournal.com/articles/64).
+
+- Following the short and simple instructions on the [GenomeScope documentation page](http://qb.cshl.edu/genomescope/genomescope2.0/), and the script below, I generated kmer count estimations and a histogram of kmer distribution using GenomeScope (v.2.0)
+- Note, make sure to use GenomeScope version 2.0, shown in the documentation link above. KMC will count and estimate genome size based on kmer distribution, while GenomeScope visializes the results.
+
+For running KMC in a development node, paste the following code directly into command line after requesting resources (ensuring that the command formatis input path, output file name, output path:
+```
+kmc -k21 -t10 -m64 -ci1 -cs10000 /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz kmer_count_aluna_genome.kmc /blue/kawahara/amanda.markee/insect_genomics_2022/kmc_temp_dir_dev/kmer_count_aluna_genome.tmp
+```
+
+For running KMC using a SLURM submission scirpt, use the following script:
+```
+#!/bin/bash
+#SBATCH --job-name=Aluna_kmc
+#SBATCH -o Aluna_kmc_%j.out
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH -c 3
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 00:30:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara-b
+
+module load kmc/3.2.1
+
+# create directory for kmc temporary files
+mkdir kmc_tmp
+ 
+kmc -k21 /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz 21mers kmc_tmp
+
+# Having the k-mers counted it is possible to dump KMC binary database to textual form with kmc_tools.
+
+kmc_tools transform 21mers dump 21mers.txt
+
+kmc_tools transform 21mers histogram 21mer_reads.histo
+```
+
+Lastly, once your KMC script is completed (either via submission or development node), the output file ending with .histo can be uploaded directly into the [GenomeScope GUI](http://qb.cshl.edu/genomescope/genomescope2.0/) to visualize results.
+
+A link to the results I am going to display below can be found [here](http://genomescope.org/genomescope2.0/analysis.php?code=yZmFQCw5YGmWjOazjOE7)
 
 
+![Screen Shot 2022-10-03 at 11 42 28 AM](https://user-images.githubusercontent.com/56971761/193621855-c7eecdc6-1c9a-4876-aebc-74101c825927.png)
 
+![Screen Shot 2022-10-03 at 11 43 32 AM](https://user-images.githubusercontent.com/56971761/193621902-49f8ec6d-4499-48a8-ad3b-e666f2568c12.png)
+
+![Screen Shot 2022-10-03 at 11 43 49 AM](https://user-images.githubusercontent.com/56971761/193622067-762f4454-57a1-4f71-a6a5-4c56707e117e.png)
+
+![Screen Shot 2022-10-03 at 11 43 56 AM](https://user-images.githubusercontent.com/56971761/193622077-77435740-5c58-460b-9739-1136b698468d.png)
+
+Results Summarized:
+- The estimated genome size is about 420 Mbp.
+- The heterozygosity is fairly low, about 1.3%
+- The mean coverage is about 19.6X, which is in line with what is expected from the model (1.959e+01).
 
 
