@@ -22,6 +22,8 @@ This section describes the methods I used for both assembling and annotating the
 
 ### Polishing and Purging Haplotigs [(assemblystats.py)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10032022-genome-assembly-quality-assessment-with-assemblystatspy)
 
+### Contamination Filtering [(BlobPlot)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10042022-contaminaiton-filtering-with-blobtools)
+
 ### Feature Annotation (TBD: Maker/Baker?)
 
 ### Functional Annotation (TBD: Maker/Baker?)
