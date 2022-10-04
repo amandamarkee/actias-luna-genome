@@ -14,15 +14,17 @@ Genome assembly and annotation workflow for the luna moth, _Actias luna_. This r
 ## General Workflow
 This section describes the methods I used for both assembling and annotating the luna moth genome from PacBio High Fidelity (HiFi) reads. Methods in this repository follow those described in [Kawahara et al., 2022](https://gigabytejournal.com/articles/64)
 
-### Read Quality Assessment [(FastQC)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#09192022-raw-read-quality-assessment-with-fastqc)
+### Read Quality Assessment [(FastQC)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#09192022-raw-read-quality-assessment-with-fastqc)
 
-### Contig Assembly [(hifiasm)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#09192022-genome-assembly-with-hifiasm)
+### Contig Assembly [(hifiasm)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#09192022-genome-assembly-with-hifiasm)
 
-### Assembly Quality Assessment [(BUSCO)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10032022-genome-completeness-with-busco)
+### Assembly Quality Assessment [(BUSCO)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#10032022-genome-completeness-with-busco)
 
-### Polishing and Purging Haplotigs [(assemblystats.py)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10032022-genome-assembly-quality-assessment-with-assemblystatspy)
+### Polishing and Purging Haplotigs [(assemblystats.py)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#10032022-genome-assembly-quality-assessment-with-assemblystatspy)
 
-### Contamination Filtering [(BlobPlot)](https://github.com/amandamarkee/actias-luna-genome/blob/main/notes-ACTIVE.md#10042022-contaminaiton-filtering-with-blobtools)
+### Genome Size Estimation [(KMC and GenomeScope)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#10032022-genome-size-estimation-kmer-with-kmc-and-genomescope)
+
+### Contamination Filtering [(BlobTools)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#10042022-contaminaiton-filtering-with-blobtools)
 
 ### Feature Annotation (TBD: Maker/Baker?)
 
