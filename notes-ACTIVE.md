@@ -370,9 +370,120 @@ A link to the results I am going to display below can be found [here](http://gen
 
 ![Screen Shot 2022-10-03 at 11 43 56 AM](https://user-images.githubusercontent.com/56971761/193622077-77435740-5c58-460b-9739-1136b698468d.png)
 
-Results Summarized:
+_GenomeScope Results Summarized:_
 - The estimated genome size is about 420 Mbp.
 - The heterozygosity is fairly low, about 1.3%
 - The mean coverage is about 19.6X, which is in line with what is expected from the model (1.959e+01).
+
+## **10/04/2022; Contaminaiton Filtering with BlobTools**
+
+- We can use Blob Tools to assess genome contamination (version 1.0)
+
+![Screen Shot 2022-10-04 at 9 40 26 AM](https://user-images.githubusercontent.com/56971761/193835309-9ddf6dfc-7cd4-4f33-a94d-ad6ab778ca45.png)
+
+- To run blob tools we need three files:
+	- (1) nodes.dmp and names.dmp files (from NCBI tax dump) 
+	- (2) .bam alignment file (from minimap2 & samtools script) 
+	- (3) .nt blast match file (from NCBI megablast)
+
+(1) To download NCBI taxdump and create nodes.dmp and names.dmp (copy and paste this command in terminal, it will create data directory and create files)
+
+```
+wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz -P data/
+tar zxf data/taxdump.tar.gz -C data/ nodes.dmp names.dmp
+. blobtools nodesdb --nodes data/nodes.dmp --names data/names.dmp
+```
+
+(2) To generate mapping files (BAM), I used the following script which utilizes minimap and samtools:
+```
+#!/bin/sh
+#SBATCH --job-name=Al_minimap2
+#SBATCH --output=Al_minimap2_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=10
+#SBATCH --mem=60gb
+#SBATCH --time=08:00:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara
+
+pwd; hostname; date
+
+module load minimap2
+
+minimap2 -ax map-pb /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa /blue/kawahara/amanda.markee/ICBR/NS-2497/0000000200/outputs/m64219e_220210_175238.hifi_reads.fastq.gz > Al.aln.sam
+
+module load samtools
+#convert SAM file to BAM file
+samtools view -S -b Al.aln.sam > Al.aln.bam
+
+#Use samtools sort to convert the BAM file to a coordinate sorted BAM file
+samtools sort Al.aln.bam > Al.aln.sorted.bam
+
+#index a genome sorted bAM file for quick alignment
+samtools index Al.aln.sorted.bam > Al_indexed_sorted_bam
+```
+Note: The output for the megablast script will contain multiple files. The one used for input for BlobTools is the XX.aln.sorted.bam file
+
+
+(3) Lastly, to generate taxanomic hit files, I used the following script which utilizes megablast:
+```
+#!/bin/sh
+#SBATCH --job-name=Al_megablast
+#SBATCH --output=Al_megablast_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amarkee@floridamuseum.ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=20gb
+#SBATCH --time 8-00:00:00
+#SBATCH --qos=kawahara
+#SBATCH --account=kawahara
+
+pwd; hostname; date
+
+module load ncbi_blast
+blastn -db nt -task megablast -query /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa -out Aluna_megablast.nt -evalue 1e-5 -outfmt "6 qseqid staxids bitscore sgi sskingdoms sscinames" -max_target_seqs 1 -num_threads=16
+```
+Note: The output for the megablast script will contain a file with a ".nt" and ".txt" extension. The ".nt" extension is used as the hit file input for BlobTools.
+
+Once all three input files are created, I ran the following BlobTools script to generate the contamination visualization (BlobPlot):
+```
+#SBATCH --job-name=Al_blob
+#SBATCH --output=Al_blob_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=20gb
+#SBATCH --time 04:00:00
+#SBATCH --qos=kawahara
+#SBATCH --account=kawahara
+
+pwd; hostname; date
+
+## Run blob tools
+ 
+module load blobtools/1.0
+
+blobtools create -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa \
+-b /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/Al.aln.sorted.bam \
+-t /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/Aluna_megablast.nt \
+--nodes /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/nodes.dmp \
+--names /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/names.dmp \
+-o Al_blob_result
+
+## You can then view and plot
+#blobtools view -i result.blobDB.json
+#blobtools plot -i result.blobDB.json
+```
+
+![Al_blob_result blobDB json bestsum phylum p7 span 100 blobplot bam0](https://user-images.githubusercontent.com/56971761/193838591-0404d830-aff1-4b7c-bbe2-23b6420c56ad.png)
+
+![Al_blob_result blobDB json bestsum phylum p7 span 100 blobplot read_cov bam0](https://user-images.githubusercontent.com/56971761/193838619-2fa4dc30-3de9-4237-a1e5-0a369d08b213.png)
+
+Interestingly, while most of the DNA came back in line with arthropoda (72.26%), there was a percentage that came back as microsporidia (2.05%) which could be indicative of a fungal infection in the organism I sequenced. Evidence of this is shown in [some literature for Saturniidae](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6842381/) and I will be looking further into this.
+
 
 
