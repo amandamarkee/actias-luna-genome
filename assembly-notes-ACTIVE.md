@@ -555,3 +555,29 @@ We can also confirm the removals worked by using grep to look for the original s
 [amanda.markee@c0709a-s30 blobtools]$ grep ptg000096l aluna_final_assembly.fasta # no results for this example from Streptophyta
 ```
 
+3) I reran busco on the final verison of the assembly to ensure that these contaminated contigs didn't effect duplication.
+
+```
+#!/bin/bash
+#SBATCH --job-name=busco
+#SBATCH -o Luna_busco5_endo_%j.out
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=2gb
+#SBATCH -t 4:00:00
+#SBATCH -c 6
+
+export BUSCO_CONFIG_FILE=/blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/BUSCO_RERUN/config.ini
+export AUGUSTUS_CONFIG_PATH=/blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/BUSCO_RERUN
+
+echo $BUSCO_CONFIG_FILE
+
+module load busco/5.2.0
+
+busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/BUSCO_RERUN/aluna_final_assembly.fasta \
+ -o BUSCO_Luna_endopterygotap -l /data/reference/busco/v5/lineages/endopterygota_odb10   \
+ -m genome -c 6
+
+#       endopterygota_odb10
+#       insecta_odb10
+```
