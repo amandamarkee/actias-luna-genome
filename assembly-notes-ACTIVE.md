@@ -587,3 +587,5 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/BUSCO_RE
 #       insecta_odb10
 ```
 <br />
+
+Hurray! This concludes the assembly portion of my genome. Please see the [annotation](https://github.com/amandamarkee/actias-luna-genome/blob/main/annotation-notes-ACTIVE.md) note for next steps involving genome annotation.
