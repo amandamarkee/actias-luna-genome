@@ -485,5 +485,73 @@ blobtools create -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/
 
 Interestingly, while most of the DNA came back in line with arthropoda (72.26%), there was a percentage that came back as microsporidia (2.05%) which could be indicative of a fungal infection in the organism I sequenced. Evidence of this is shown in [some literature for Saturniidae](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6842381/) and I will be looking further into this.
 
+## **10/9/2022; Contaminaiton Removal and BUSCO Re-Run**
 
+Blobtools revealed three non-target contigs in the assembly (ptg000026l, ptg000035l, and ptg000043l) belonging to Microsporidia, and eight non-target contigs in the assembly (ptg000047l, ptg000085l, ptg000090l, ptg000096l, ptg000097l, ptg000098l, ptg000106l, ptg000123l) beloging to Streptophyta. 
+
+1) I conducted a quick check on the original BUSCO output result to see if any contribution was made from these contigs,
+- If the contig showed up in the original output table, I removed them manually, and redid BUSCO.
+- After checking the first contig, it did show up in the table, so I manually removed all contigs and re-ran BUSCO.
+
+```
+[amanda.markee@login1 run_endopterygota_odb10]$ pwd
+/blue/kawahara/amanda.markee/ICBR/hifiasm/BUSCO/BUSCO_Luna_endopterygotap/run_endopterygota_odb10
+[amanda.markee@login1 run_endopterygota_odb10]$ cat full_table.tsv | grep "ptg000026l"
+# this contig came up multiple times in the BUSCO output
+```
+
+2) To manually make the final assembly, remove non-target contigs from the genome using a simple grep/sed command. I could probably edit this into a prettier for-loop, but for the sake of time, and due to there only being a few contaminant contigs, I wrote the script this way:
+```
+#!/bin/sh
+#SBATCH --job-name=Al_final_asm
+#SBATCH --output=Al_final_asm_%j.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=20gb
+#SBATCH --time 04:00:00
+#SBATCH --qos=kawahara
+#SBATCH --account=kawahara
+
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools
+
+sed -e '/ptg000026l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa > temp1_aluna_final_assembly.fasta
+
+sed -e '/ptg000035l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp1_aluna_final_assembly.fasta > temp2_aluna_final_assembly.fasta
+
+sed -e '/ptg000043l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp2_aluna_final_assembly.fasta > temp3_aluna_final_assembly.fasta
+
+sed -e '/ptg000047l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp3_aluna_final_assembly.fasta > temp4_aluna_final_assembly.fasta
+
+sed -e '/ptg000085l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp4_aluna_final_assembly.fasta > temp5_aluna_final_assembly.fasta
+
+sed -e '/ptg000090l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp5_aluna_final_assembly.fasta > temp6_aluna_final_assembly.fasta
+
+sed -e '/ptg000096l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp6_aluna_final_assembly.fasta > temp7_aluna_final_assembly.fasta
+
+sed -e '/ptg000097l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp7_aluna_final_assembly.fasta > temp8_aluna_final_assembly.fasta
+
+sed -e '/ptg000098l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp8_aluna_final_assembly.fasta > temp9_aluna_final_assembly.fasta
+
+sed -e '/ptg000106l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp9_aluna_final_assembly.fasta > temp10_aluna_final_assembly.fasta
+
+sed -e '/ptg000123l/,+1d' /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/temp10_aluna_final_assembly.fasta > aluna_final_assembly.fasta
+```
+
+To confirm that these removals worked, we can take the original wc of the original assembly, and subtract 2n (where n = number of contigs removed, since two lines should have been removed per non-target contig):
+- 310 original lines - 2(3 Microsporidia + 8 Streptophyta) = 288 lines remaining
+```
+[amanda.markee@c0709a-s30 blobtools]$ wc aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa 
+      310       310 533454976 aclu_hifi_assembly_06-14-2022.asm.bp.p_ctg.fa # this is the original file, containing 310 lines
+      
+[amanda.markee@c0709a-s30 blobtools]$ wc aluna_final_assembly.fasta 
+      288       288 518035841 aluna_final_assembly.fasta # this is the new and final assembly file, containing 288 lines, aka what we want
+```
+
+We can also confirm the removals worked by using grep to look for the original sequence names we used in the removal script. If they are no longer in the final assembly file, then we removed the seqs successfully:
+```
+[amanda.markee@c0709a-s30 blobtools]$ grep ptg000026l aluna_final_assembly.fasta # no results for this example from Microsporidia
+[amanda.markee@c0709a-s30 blobtools]$ grep ptg000096l aluna_final_assembly.fasta # no results for this example from Streptophyta
+```
 
