@@ -22,6 +22,7 @@
       - Functional Annotation:
          - Add functional annotations to the predicted proteins: BlastP
          - Blast2GO for go term annotation
+<br />
 
 ## **09/19/2022; Data Accumulation and File Explanations**
 
@@ -39,6 +40,7 @@ cd /blue/kawahara/amanda.markee/ICBR/NS-2497
   - 0000000200 = folder that contains full completed hifi reads w/metadata
   - 0000000205 = folder that contains css / .json  
   - 1_A05 = folder that contains raw data, and ccs reports
+<br />
 
 ## **09/19/2022; Raw Read Quality Assessment with FastQC**
 -[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is a quality assessment tool for next generation sequencing, often used to assess raw reed quality and highlight problem areas in the form of visualizations (see results below).
@@ -87,8 +89,7 @@ The FastQC output files include an .html file, which will contain visualizations
 ![Screen Shot 2022-10-03 at 12 19 27 PM](https://user-images.githubusercontent.com/56971761/193628513-bdf8ac54-fd40-4d6d-bd21-3fc35f2a1766.png)
 
 ![Screen Shot 2022-10-03 at 12 19 37 PM](https://user-images.githubusercontent.com/56971761/193628527-02fc686c-ed19-4043-b758-22dbdc1e1fb0.png)
-
-
+<br />
 
 ## **09/19/2022; Genome Assembly with hifiasm**
 
@@ -120,7 +121,7 @@ hifiasm -o /blue/kawahara/amanda.markee/ICBR/hifiasm/aclu_hifi_assembly_06-14-20
 # output files moved to following directory
 /blue/kawahara/amanda.markee/ICBR/hifiasm/hifiasm_output_files
 ```
-
+<br />
 
 ## **10/03/2022; Genome Assembly Quality Assessment with assemblystats.py**
 
@@ -260,7 +261,7 @@ Save results as a text file as shown.
 The results will look like the following table:
 
 ![Screen Shot 2022-10-03 at 11 54 34 AM](https://user-images.githubusercontent.com/56971761/193622529-568bc8f8-f936-4995-91c8-989f8da21759.png)
-
+<br />
 
 ## **10/03/2022; Genome Completeness with BUSCO**
 
@@ -317,6 +318,7 @@ Once BUSCO has finished running, a short summary output table will show you your
 	8	Missing BUSCOs (M)			   
 	2124	Total BUSCO groups searched
 ```
+<br />
 
 ## **10/03/2022; Genome Size Estimation (kmer) with KMC and GenomeScope**
 
@@ -374,6 +376,7 @@ _GenomeScope Results Summarized:_
 - The estimated genome size is about 420 Mbp.
 - The heterozygosity is fairly low, about 1.3%
 - The mean coverage is about 19.6X, which is in line with what is expected from the model (1.959e+01).
+<br />
 
 ## **10/04/2022; Contaminaiton Filtering with BlobTools**
 
@@ -485,6 +488,8 @@ blobtools create -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/
 
 Interestingly, while most of the DNA came back in line with arthropoda (72.26%), there was a percentage that came back as microsporidia (2.05%) which could be indicative of a fungal infection in the organism I sequenced. Evidence of this is shown in [some literature for Saturniidae](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6842381/) and I will be looking further into this.
 
+<br />
+
 ## **10/9/2022; Contaminaiton Removal and BUSCO Re-Run**
 
 Blobtools revealed three non-target contigs in the assembly (ptg000026l, ptg000035l, and ptg000043l) belonging to Microsporidia, and eight non-target contigs in the assembly (ptg000047l, ptg000085l, ptg000090l, ptg000096l, ptg000097l, ptg000098l, ptg000106l, ptg000123l) beloging to Streptophyta. 
@@ -581,3 +586,4 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/BUSCO_RE
 #       endopterygota_odb10
 #       insecta_odb10
 ```
+<br />
