@@ -582,4 +582,68 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/BUSCO_RE
 ```
 <br />
 
+As one last note, I tried re-running BUSCO after removing all 11 contamination contigs, which includes the ambiguous Microsporidia hits. I decided moving forward to keep these contigs in my assembly, because it is unclear whether they are biologically important, and/or contamination at all. YiMing helped me  create a table with the genes of the suspicious contigs (ptg000026l) and this is the output below. I will use this when I investigate the funal infection in the future. 
+
+Code to create the table of genes of suspicious contigs (ptg000026l):
+```
+IFS=$'\n'
+for contig in $(cat micro_list)
+do
+	cat full_table.tsv | grep "Complete"| grep "${contig}" | cut -d $'\t' -f 1,3,10
+done
+```
+
+Output table:
+```
+3572at33392	ptg000026l	protein polybromo-1 isoform X1
+4774at33392	ptg000026l	Superoxide dismutase, copper/zinc binding domain
+6111at33392	ptg000026l	DNA-directed RNA polymerase I subunit RPA2
+8676at33392	ptg000026l	erythroid differentiation-related factor 1
+9436at33392	ptg000026l	EGF-like, conserved site
+9531at33392	ptg000026l	lateral signaling target protein 2 homolog
+11178at33392	ptg000026l	protein O-GlcNAcase isoform X1
+15662at33392	ptg000026l	actin-binding LIM protein 1 isoform X1
+18418at33392	ptg000026l	glycerol-3-phosphate acyltransferase 1, mitochondrial isoform X1
+26299at33392	ptg000026l	serine/threonine-protein phosphatase PP2A 65 kDa regulatory subunit isoform X1
+27414at33392	ptg000026l	nucleolar protein 14 homolog
+29374at33392	ptg000026l	wolframin
+29448at33392	ptg000026l	ubiquitin thioesterase trabid
+35390at33392	ptg000026l	V-type proton ATPase subunit B
+39895at33392	ptg000026l	type I inositol 1,4,5-trisphosphate 5-phosphatase isoform X1
+40134at33392	ptg000026l	Serine/threonine-protein phosphatase 2A 55 kDa regulatory subunit B
+41300at33392	ptg000026l	Phosphoacetylglucosamine mutase
+42095at33392	ptg000026l	uncharacterized F-box/LRR-repeat protein C02F5.7 isoform X1
+44494at33392	ptg000026l	alpha-sarcoglycan isoform X1
+46597at33392	ptg000026l	nucleolar protein 56
+46710at33392	ptg000026l	protein TRC8 homolog
+51019at33392	ptg000026l	macrophage erythroblast attacher
+51926at33392	ptg000026l	Glutamyl-tRNA(Gln) amidotransferase subunit A, mitochondrial
+56869at33392	ptg000026l	D-isomer specific 2-hydroxyacid dehydrogenase, NAD-binding domain
+57156at33392	ptg000026l	26S protease regulatory subunit 10B
+63558at33392	ptg000026l	mushroom body large-type Kenyon cell-specific protein 1
+65048at33392	ptg000026l	DNA mismatch repair protein Mlh1
+72292at33392	ptg000026l	vesicular integral-membrane protein VIP36
+83135at33392	ptg000026l	retinol dehydrogenase 14
+85072at33392	ptg000026l	beta-1,4-galactosyltransferase 7
+85808at33392	ptg000026l	Pyridoxal phosphate homeostasis protein
+87067at33392	ptg000026l	Tetraspanin
+87827at33392	ptg000026l	general transcription factor IIH subunit 3
+93204at33392	ptg000026l	ubiquitin-like domain-containing CTD phosphatase 1
+100217at33392	ptg000026l	spermatogenesis-defective protein 39 homolog
+106188at33392	ptg000026l	uncharacterized protein LOC108377326
+107239at33392	ptg000026l	TBC1 domain family member 7
+108672at33392	ptg000026l	probable 28S ribosomal protein S25, mitochondrial
+111388at33392	ptg000026l	protein BCCIP homolog
+111586at33392	ptg000026l	golgin subfamily A member 7
+115498at33392	ptg000026l	2-aminoethanethiol dioxygenase
+115508at33392	ptg000026l	Osiris 7
+117933at33392	ptg000026l	28S ribosomal protein S18c, mitochondrial
+121696at33392	ptg000026l	charged multivesicular body protein 3
+124487at33392	ptg000026l	H/ACA ribonucleoprotein complex subunit 2-like protein
+125834at33392	ptg000026l	28S ribosomal protein S10, mitochondrial
+127868at33392	ptg000026l	upstream activation factor subunit spp27
+128995at33392	ptg000026l	Osiris 20
+129444at33392	ptg000026l	probable small nuclear ribonucleoprotein Sm D2
+```
+
 Hurray! This concludes the assembly portion of my genome. Please see the [annotation](https://github.com/amandamarkee/actias-luna-genome/blob/main/annotation-notes-ACTIVE.md) note for next steps involving genome annotation.
