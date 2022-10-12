@@ -5,10 +5,11 @@ Now that my genome assembly is complete, we have a high-quality and accurate ass
 
 First, we need to run [RepeatModeler2](https://www.pnas.org/doi/10.1073/pnas.1921046117) to identify and model for repeat elements in the genome.
 
-Navigate to your working directory for annotation, and run the following script on your genome assembly:
+Navigate to your working directory for annotation, and execute the following script on your genome assembly using the following code:
 ```
 [amanda.markee@login1 aluna_annotation]$ pwd
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation
+sbatch repeatmodeler.sh /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aluna_final_assembly.fasta aluna_repeatmodeler
 ```
 
 ```
