@@ -20,7 +20,7 @@ sbatch repeatmodeler.sh /blue/kawahara/amanda.markee/insect_genomics_2022/blobto
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=amanda.markee@ufl.edu
 #SBATCH --mem-per-cpu=4gb
-#SBATCH -t 08:00:00
+#SBATCH -t 120:00:00
 #SBATCH -c 30
 
 export LC_CTYPE=en_US.UTF-8
@@ -43,3 +43,44 @@ cat aluna_genome-families.prefix.fa | seqkit fx2tab | grep -v "Unknown" | seqkit
 cat aluna_genome-families.prefix.fa | seqkit fx2tab | grep "Unknown" | seqkit tab2fx > aluna-genome-families.prefix.fa.unknown
 ```
 </br>
+
+## **11/7/2022; Annotation – RepeatMasker**
+
+Once RepeatModeler2 is complete, we can move on to masking the genome with the RepeatModeler2 output information. Here, I will be following reccomendations from [Dr.Card](https://darencard.net/blog/2022-07-09-genome-repeat-annotation/) about how to comprehensively mask a genome with repeat sequences. There are four steps, and I am following [Dr. YiMing Weng's](https://github.com/yimingweng/Kely_genome_project/blob/main/note.md#09072022-1) four seperate scripts below.
+
+</br>
+
+Step 1: Mask Simple Repeats
+
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_modeler
+sbatch aluna_repeatmask_step1.slurm
+```
+```
+###########################  script content  ###########################
+
+#!/bin/bash
+#SBATCH --job-name=aluna_repeatmask_step1
+#SBATCH -o aluna_repeatmask_step1.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 120:00:00
+#SBATCH -c 16
+
+mkdir aluna_repeatmasker_step1
+
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+module load repeatmasker/4.1.1
+
+RepeatMasker -pa 16 -a -s \
+-xsmall \
+-e RMBlast \
+-gff \
+-noint \
+-no_is \
+-dir aluna_repeatmasker_step1 \
+/blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aluna_final_assembly.fasta &> aluna_repeatmasker_step1.out
+```
