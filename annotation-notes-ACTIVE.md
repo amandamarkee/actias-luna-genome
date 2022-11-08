@@ -48,9 +48,11 @@ cat aluna_genome-families.prefix.fa | seqkit fx2tab | grep "Unknown" | seqkit ta
 
 Once RepeatModeler2 is complete, we can move on to masking the genome with the RepeatModeler2 output information. Here, I will be following reccomendations from [Dr.Card](https://darencard.net/blog/2022-07-09-genome-repeat-annotation/) about how to comprehensively mask a genome with repeat sequences. There are four steps, and I am following [Dr. YiMing Weng's](https://github.com/yimingweng/Kely_genome_project/blob/main/note.md#09072022-1) four seperate scripts below.
 
+We will use the output of RepeatModeler2 to run RepeatMasker. Including the repeats from RepeatModeler2, I will use 4 different peices of evidence to mask the repeat regions for the genome: (1) mask the simple and short repeats, detected by RepeatMasker; (2) mask repeats based on existing databases (Repbase, Lepidoptera database); (3) mask genome based on the output of RepeatModeler2; and (4) mask the genome using a reference transcriptome from the same species (_Actias luna)_. Note that I used soft-masking for all the repeat regions to create the most inclusive gene model, without deleting uncertain regions.
+
 </br>
 
-Step 1: Mask Simple Repeats
+## Step 1: Mask Simple Repeats
 
 ```
 cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_modeler
@@ -84,3 +86,44 @@ RepeatMasker -pa 16 -a -s \
 -dir aluna_repeatmasker_step1 \
 /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aluna_final_assembly.fasta &> aluna_repeatmasker_step1.out
 ```
+
+## Step 2: Mask Repeats Based on Existing Databases
+
+Once we mask the simple repeat elements, we will use the existing database [Repbase](https://www.girinst.org/repbase/) to continue building our gene model. First we navigate too our RepeatMasker directory, then run the following script in that directory.
+
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
+```
+
+```
+###########################  script content  ###########################
+#!/bin/bash
+#SBATCH --job-name=aluna_repeatmask_step2
+#SBATCH -o aluna_repeatmask_step2.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 120:00:00
+#SBATCH -c 16
+
+mkdir aluna_repeatmasker_step2
+
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+module load repeatmasker/4.1.1
+
+RepeatMasker -pa 16 -a -s \
+-xsmall \
+-e RMBlast \
+-gff \
+-no_is \
+-species Lepidoptera \
+-dir aluna_repeatmasker_step2 \
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step1/aluna_final_assembly.fasta.masked &> aluna_repeatmasker_step2.out
+
+mv aluna_repeatmask_step2.out out_files
+```
+
+
+
