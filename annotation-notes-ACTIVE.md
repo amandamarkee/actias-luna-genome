@@ -48,7 +48,7 @@ cat aluna_genome-families.prefix.fa | seqkit fx2tab | grep "Unknown" | seqkit ta
 
 Once RepeatModeler2 is complete, we can move on to masking the genome with the RepeatModeler2 output information. Here, I will be following reccomendations from [Dr.Card](https://darencard.net/blog/2022-07-09-genome-repeat-annotation/) about how to comprehensively mask a genome with repeat sequences. There are four steps, and I am following [Dr. YiMing Weng's](https://github.com/yimingweng/Kely_genome_project/blob/main/note.md#09072022-1) four seperate scripts below.
 
-We will use the output of RepeatModeler2 to run RepeatMasker. Including the repeats from RepeatModeler2, I will use 4 different peices of evidence to mask the repeat regions for the genome: (1) mask the simple and short repeats, detected by RepeatMasker; (2) mask repeats based on existing databases (Repbase, Lepidoptera database); (3) mask genome based on the output of RepeatModeler2; and (4) mask the genome using a reference transcriptome from the same species (_Actias luna)_. Note that I used soft-masking for all the repeat regions to create the most inclusive gene model, without deleting uncertain regions.
+We will use the output of RepeatModeler2 to run RepeatMasker. Including the repeats from RepeatModeler2, I will use 4 different peices of evidence to mask the repeat regions for the genome: (1) mask the simple and short repeats, detected by RepeatMasker; (2) mask repeats based on existing databases (Repbase, Lepidoptera database); (3) mask genome based on the output of RepeatModeler2. Note that I used soft-masking for all the repeat regions to create the most inclusive gene model, without deleting uncertain regions.
 
 </br>
 
@@ -126,5 +126,76 @@ RepeatMasker -pa 16 -a -s \
 mv aluna_repeatmask_step2.out out_files
 ```
 
+## Step3: Mask Genome Based on RepeatModeler2 Output
 
+Next, we use the output from RepeatModeler2 (from the beginning of the annotation workflow) to continue building the gene model. 
 
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
+sbatch aluna_repeatmask_step3.slurm
+```
+
+```
+###########################  script content  ###########################
+#!/bin/bash
+#SBATCH --job-name=aluna_repeatmask_step3
+#SBATCH -o aluna_repeatmask_step3.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 120:00:00
+#SBATCH -c 16
+
+mkdir aluna_repeatmasker_step3
+
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+module load repeatmasker/4.1.1
+
+RepeatMasker -pa 16 -a -s \
+-xsmall \
+-e RMBlast \
+-gff \
+-no_is \
+-lib /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_modeler/aluna-genome-families.prefix.fa.known \
+-dir aluna_repeatmasker_step3 \
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step2/aluna_final_assembly.fasta.masked.masked &> aluna_repeatmasker_step3.out
+
+mv aluna_repeatmask_step3.out aluna_repeatmasker_step3
+```
+
+## Calculate Masking Percentage
+The final step is to calculate the masking percentage to determine the soft masking rate vs. the hard masking rate. I used the following script.
+
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step3
+bash /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step3/maskrate.sh aluna_final_assembly.fasta.masked.masked.masked
+```
+
+```
+###########################  script content  ###########################
+#!/bin/bash
+
+input=${1}
+
+total=$(cat ${input} | grep -v ">" | wc -c)
+softmask=$(cat ${input} | grep -v ">"| tr -dc a-z | wc -c)
+hardmask=$(cat ${input} | grep -v ">"| tr -dc "N" | wc -c)
+softrate=$(echo 100*$softmask/$total | bc -l | grep -o  "^.....")
+hardrate=$(echo 100*$hardmask/$total | bc -l | grep -o  "^.....")
+
+if [[ $softmask == 0 ]]
+then
+echo -e "softmasking rate is 0%"
+else
+echo -e "softmasking rate is ${softrate}%"
+fi
+
+if [[ $hardmask == 0 ]]
+then
+echo -e  "hardmasking rate is 0%"
+else 
+echo -e  "hardmasking rate is ${hardrate}%"
+fi
+```
