@@ -55,7 +55,7 @@ We will use the output of RepeatModeler2 to run RepeatMasker. Including the repe
 ## Step 1: Mask Simple Repeats
 
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_modeler
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
 sbatch aluna_repeatmask_step1.slurm
 ```
 ```
@@ -93,6 +93,7 @@ Once we mask the simple repeat elements, we will use the existing database [Repb
 
 ```
 cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
+sbatch aluna_repeatmask_step2.slurm
 ```
 
 ```
