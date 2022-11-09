@@ -44,15 +44,15 @@ cat aluna_genome-families.prefix.fa | seqkit fx2tab | grep "Unknown" | seqkit ta
 ```
 </br>
 
-## **11/7/2022; Annotation – RepeatMasker**
+## **11/7/2022; Feature Annotation (Part 1) – RepeatMasker**
 
 Once RepeatModeler2 is complete, we can move on to masking the genome with the RepeatModeler2 output information. Here, I will be following reccomendations from [Dr.Card](https://darencard.net/blog/2022-07-09-genome-repeat-annotation/) about how to comprehensively mask a genome with repeat sequences. There are four steps, and I am following [Dr. YiMing Weng's](https://github.com/yimingweng/Kely_genome_project/blob/main/note.md#09072022-1) four seperate scripts below.
 
-We will use the output of RepeatModeler2 to run RepeatMasker. Including the repeats from RepeatModeler2, I will use 4 different peices of evidence to mask the repeat regions for the genome: (1) mask the simple and short repeats, detected by RepeatMasker; (2) mask repeats based on existing databases (Repbase, Lepidoptera database); (3) mask genome based on the output of RepeatModeler2. Note that I used soft-masking for all the repeat regions to create the most inclusive gene model, without deleting uncertain regions.
+We will use the output of RepeatModeler2 to run RepeatMasker. Including the repeats from RepeatModeler2, I will use 4 different peices of evidence to mask the repeat regions for the genome: (1) mask the simple and short repeats, detected by RepeatMasker; (2) mask repeats based on existing databases (Repbase, Lepidoptera database); (3) mask genome based on the output of RepeatModeler2; (4) calculate the percentage of hardmasking vs softmasking. Note that I used soft-masking for all the repeat regions.
 
 </br>
 
-## Step 1: Mask Simple Repeats
+## Step 1: Feature Annotation – Mask Simple Repeats
 
 ```
 cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
@@ -87,7 +87,7 @@ RepeatMasker -pa 16 -a -s \
 /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aluna_final_assembly.fasta &> aluna_repeatmasker_step1.out
 ```
 
-## Step 2: Mask Repeats Based on Existing Databases
+## Step 2: Feature Annotation – Mask Repeats Based on Existing Databases
 
 Once we mask the simple repeat elements, we will use the existing database [Repbase](https://www.girinst.org/repbase/) to continue building our gene model. First we navigate too our RepeatMasker directory, then run the following script in that directory.
 
@@ -126,9 +126,9 @@ RepeatMasker -pa 16 -a -s \
 mv aluna_repeatmask_step2.out out_files
 ```
 
-## Step3: Mask Genome Based on RepeatModeler2 Output
+## Step 3: Feature Annotation – Mask Genome Based on RepeatModeler2 Output
 
-Next, we use the output from RepeatModeler2 (from the beginning of the annotation workflow) to continue building the gene model. 
+Next, we use the output from RepeatModeler2 (from the beginning of the annotation workflow) to continue masking repeat regions. 
 
 ```
 cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
@@ -165,7 +165,7 @@ RepeatMasker -pa 16 -a -s \
 mv aluna_repeatmask_step3.out aluna_repeatmasker_step3
 ```
 
-## Calculate Masking Percentage
+## Step 4: Feature Annotation – Calculate Masking Percentage
 The final step is to calculate the masking percentage to determine the soft masking rate vs. the hard masking rate. I used the following script.
 
 ```
@@ -199,3 +199,13 @@ else
 echo -e  "hardmasking rate is ${hardrate}%"
 fi
 ```
+
+softmasking rate is **40.58%** | hardmasking rate is 0%
+
+
+## Feature Annotation (Part 2) – Building the Gene Model
+
+During a feature annotation, we can use multiple pieces of evidence to build and support the strongest and most accurate gene model. It's best to to have RNAseq data from the same species as your genome when building your model, so that the splicing sites and the gene features can be better caught by the predictor. If you do not have RNAseq data available for your species, a suboptimal alternative is to predict the gene model based on the ab initio (signal sensors and content sensors) and the protein sequence data from other insect species. 
+
+In this case, I do have RNAseq data, and will use the annotation workflow from [braker2](https://github.com/Gaius-Augustus/BRAKER#braker-with-proteins-of-any-evolutionary-distance) to include long-read RNAseq data, and information from the OrthoDB protein database. 
+
