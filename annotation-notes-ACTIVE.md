@@ -203,9 +203,17 @@ fi
 softmasking rate is **40.58%** | hardmasking rate is 0%
 
 
-## Feature Annotation (Part 2) – Building the Gene Model
+## **12/5/2022; Feature Annotation – Building the Gene Model in FunAnnotate**
 
 During a feature annotation, we can use multiple pieces of evidence to build and support the strongest and most accurate gene model. It's best to to have RNAseq data from the same species as your genome when building your model, so that the splicing sites and the gene features can be better caught by the predictor. If you do not have RNAseq data available for your species, a suboptimal alternative is to predict the gene model based on the ab initio (signal sensors and content sensors) and the protein sequence data from other insect species. 
 
-In this case, I do have RNAseq data, and will use the annotation workflow from [braker2](https://github.com/Gaius-Augustus/BRAKER#braker-with-proteins-of-any-evolutionary-distance) to include long-read RNAseq data, and information from the OrthoDB protein database. 
+In this case, I do have RNAseq data, and will use the annotation workflow from [FunAnnotate](https://funannotate.readthedocs.io/en/latest/index.html#) to include long-read RNAseq data, and information from the UniProt/SwissProt protein database. 
+
+Funannotate uses Evidence Modeler to combine ab initio gene model predictions with evidence (transcripts or proteins) aligned to the genome. Therefore, the evidence that you supply at runtime for --transcript_evidence and --protein_evidence are important. By default, funannotate will use the UniProtKb/SwissProt curated protein database for protein evidence. However, you can specify other forms of protein evidence, perhaps from a well-annotated closely related species, using the --protein_evidence option. Multiple files can be passed to both --transcript_evidence or --protein_evidence by separating the files by spaces, for example:
+
+```
+funannotate predict --input genome.fa --species "Awesome species" --transcript_evidence --pacbio_isoseq isoseq.fasta myESTs.fa \
+    -o output --protein_evidence closely_related.fasta $FUNANNOTATE_DB/uniprot_sprot.fasta
+```
+
 
