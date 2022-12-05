@@ -26,10 +26,7 @@ This section describes the methods I used for both assembling and annotating the
 
 ### Contamination Filtering [(BlobTools)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#10042022-contaminaiton-filtering-with-blobtools)
 
-### Feature Annotation (TBD: Maker/Baker?)
-
-### Functional Annotation (TBD: Maker/Baker?)
-
+### Feature & Functional Annotation (FunAnnotate)
 
 
 <br />
