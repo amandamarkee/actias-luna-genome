@@ -209,11 +209,30 @@ During a feature annotation, we can use multiple pieces of evidence to build and
 
 In this case, I do have RNAseq data, and will use the annotation workflow from [FunAnnotate](https://funannotate.readthedocs.io/en/latest/index.html#) to include long-read RNAseq data, and information from the UniProt/SwissProt protein database. 
 
-Funannotate uses Evidence Modeler to combine ab initio gene model predictions with evidence (transcripts or proteins) aligned to the genome. Therefore, the evidence that you supply at runtime for --transcript_evidence and --protein_evidence are important. By default, funannotate will use the UniProtKb/SwissProt curated protein database for protein evidence. However, you can specify other forms of protein evidence, perhaps from a well-annotated closely related species, using the --protein_evidence option. Multiple files can be passed to both --transcript_evidence or --protein_evidence by separating the files by spaces, for example:
+All FunAnnotate work will be done in this directory
+```
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/funannotate
+```
+
+FunAnnotate uses Evidence Modeler to combine ab initio gene model predictions with evidence (transcripts or proteins) aligned to the genome. Therefore, the evidence that you supply at runtime for --transcript_evidence and --protein_evidence are important. By default, funannotate will use the UniProtKb/SwissProt curated protein database for protein evidence. However, you can specify other forms of protein evidence, perhaps from a well-annotated closely related species, using the --protein_evidence option. Multiple files can be passed to both --transcript_evidence or --protein_evidence by separating the files by spaces, for example:
 
 ```
 funannotate predict --input genome.fa --species "Awesome species" --transcript_evidence --pacbio_isoseq isoseq.fasta myESTs.fa \
     -o output --protein_evidence closely_related.fasta $FUNANNOTATE_DB/uniprot_sprot.fasta
 ```
 
+Using the above example script, I added the full pathway for each associated file in the form of a slurm submission:
+```
+#!/bin/bash
+#SBATCH --job-name=aluna_repeatmask_step3
+#SBATCH -o aluna_repeatmask_step3.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 120:00:00
+#SBATCH -c 16
 
+module load funannotate
+
+[INSERTY EDITED FUNANNOTATE SCRIPT HERE]
+```
