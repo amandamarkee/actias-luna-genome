@@ -207,11 +207,47 @@ softmasking rate is **40.58%** | hardmasking rate is 0%
 
 During a feature annotation, we can use multiple pieces of evidence to build and support the strongest and most accurate gene model. It's best to to have RNAseq data from the same species as your genome when building your model, so that the splicing sites and the gene features can be better caught by the predictor. If you do not have RNAseq data available for your species, a suboptimal alternative is to predict the gene model based on the ab initio (signal sensors and content sensors) and the protein sequence data from other insect species. 
 
-In this case, I do have RNAseq data, and will use the annotation workflow from [FunAnnotate](https://funannotate.readthedocs.io/en/latest/index.html#) to include long-read RNAseq data, and information from the UniProt/SwissProt protein database. 
-
 All FunAnnotate work will be done in this directory
 ```
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/funannotate
+```
+
+First, we must set up Funannotate using the script below to build the appropriate environment in HiPerGator.
+```
+#!/bin/bash
+#SBATCH --job-name=funannotate_setup
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=10gb
+#SBATCH --time=12:00:00
+#SBATCH --output=funannotate_%j.log
+#SBATCH --account=plantpath
+#SBATCH --qos=plantpath
+
+pwd; hostname; date
+
+module load funannotate
+module load funannotate/1.8.13
+
+if [[ ! -d config ]]; then
+module purge; module load augustus
+rsync -a $HPC_AUGUSTUS_CONF .
+fi
+
+export AUGUSTUS_CONFIG_PATH=$(pwd)/config
+export FUNANNOTATE_DB=$(pwd)/funannotate_db
+
+funannotate setup -i all --update -d ./funannotate_db
+
+date
+```
+
+Next, I want to start prepping my assembly by training using existing A.luna RNAseq reads, and my IsoSeq transcriptome.
+
+```
+funannotate train -i masked_genome.fasta -s 2017RNALibPool01-7_S7_L001_R2_001.fastq.gz --pacbio_isoseq instar4_isoseq.fa --species "Actias luna" -o out
 ```
 
 FunAnnotate uses Evidence Modeler to combine ab initio gene model predictions with evidence (transcripts or proteins) aligned to the genome. Therefore, the evidence that you supply at runtime for --transcript_evidence and --protein_evidence are important. By default, funannotate will use the UniProtKb/SwissProt curated protein database for protein evidence. However, you can specify other forms of protein evidence, perhaps from a well-annotated closely related species, using the --protein_evidence option. Multiple files can be passed to both --transcript_evidence or --protein_evidence by separating the files by spaces, for example:
@@ -222,10 +258,11 @@ funannotate predict --input genome.fa --species "Awesome species" --transcript_e
 ```
 
 Using the above example script, I added the full pathway for each associated file in the form of a slurm submission:
+Note: Prior to the script, I converted the IsoSeq bam file back to a FASTA format, and renamed my soft masked genome to masked_genome.fasta
 ```
 #!/bin/bash
-#SBATCH --job-name=aluna_repeatmask_step3
-#SBATCH -o aluna_repeatmask_step3.out
+#SBATCH --job-name=aluna_funannotate
+#SBATCH -o aluna_funannotate.out
 #SBATCH --mail-user=amanda.markee@ufl.edu
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mem-per-cpu=4gb
@@ -234,5 +271,7 @@ Using the above example script, I added the full pathway for each associated fil
 
 module load funannotate
 
-[INSERTY EDITED FUNANNOTATE SCRIPT HERE]
+funannotate predict --input masked_genome.fasta --species "Actias luna" --transcript_evidence 2017RNALibPool01-7_S7_L001_R2_001.fastq.gz --pacbio_isoseq instar4_isoseq.fa \
+    -o output --protein_evidence closely_related.fasta $FUNANNOTATE_DB/uniprot_sprot.fasta
+
 ```
