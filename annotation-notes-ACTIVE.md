@@ -244,11 +244,26 @@ funannotate setup -i all --update -d ./funannotate_db
 date
 ```
 
-Next, I want to start prepping my assembly by training using existing A.luna RNAseq reads, and my IsoSeq transcriptome.
+Next, I want to start prepping my assembly by training using existing A.luna RNAseq reads, and my IsoSeq transcriptome. HiPerGator support assisted in writing the script below to run the training step:
 
 ```
+#!/bin/bash
+#SBATCH --job-name=fannotate
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=20gb
+#SBATCH --time=22:00:00
+#SBATCH --output=fannotate_%j.log
+date;hostname;pwd
+
+module purge; module load funannotate/1.8.13
+
 funannotate train -i masked_genome.fasta -s 2017RNALibPool01-7_S7_L001_R2_001.fastq.gz --pacbio_isoseq instar4_isoseq.fa --species "Actias luna" -o out
+
+date
 ```
+
+## **12/7/2022; Feature Annotation – Building the Gene Model in FunAnnotate (cont.)**
 
 FunAnnotate uses Evidence Modeler to combine ab initio gene model predictions with evidence (transcripts or proteins) aligned to the genome. Therefore, the evidence that you supply at runtime for --transcript_evidence and --protein_evidence are important. By default, funannotate will use the UniProtKb/SwissProt curated protein database for protein evidence. However, you can specify other forms of protein evidence, perhaps from a well-annotated closely related species, using the --protein_evidence option. Multiple files can be passed to both --transcript_evidence or --protein_evidence by separating the files by spaces, for example:
 
@@ -257,21 +272,23 @@ funannotate predict --input genome.fa --species "Awesome species" --transcript_e
     -o output --protein_evidence closely_related.fasta $FUNANNOTATE_DB/uniprot_sprot.fasta
 ```
 
-Using the above example script, I added the full pathway for each associated file in the form of a slurm submission:
-Note: Prior to the script, I converted the IsoSeq bam file back to a FASTA format, and renamed my soft masked genome to masked_genome.fasta
+Once the training step from 12/5 has completed, and using the example code above, I created a script for running the gene prediction step:
+
 ```
 #!/bin/bash
-#SBATCH --job-name=aluna_funannotate
-#SBATCH -o aluna_funannotate.out
-#SBATCH --mail-user=amanda.markee@ufl.edu
-#SBATCH --mail-type=FAIL,END
-#SBATCH --mem-per-cpu=4gb
-#SBATCH -t 120:00:00
-#SBATCH -c 16
+#SBATCH --job-name=fannotate
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=20gb
+#SBATCH --time=22:00:00
+#SBATCH --output=fannotate_%j.log
+date;hostname;pwd
 
-module load funannotate
+module purge; module load funannotate/1.8.13
 
-funannotate predict --input masked_genome.fasta --species "Actias luna" --transcript_evidence 2017RNALibPool01-7_S7_L001_R2_001.fastq.gz --pacbio_isoseq instar4_isoseq.fa \
-    -o output --protein_evidence closely_related.fasta $FUNANNOTATE_DB/uniprot_sprot.fasta
+funannotate predict -i masked_genome.fasta --species "Actias luna" \
+    --transcript_evidence [INSERT TRINITY.FASTA] --pacbio_isoseq instar4_isoseq.fa
+
+date
 
 ```
