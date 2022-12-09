@@ -248,11 +248,11 @@ Next, I want to start prepping my assembly by training using existing A.luna RNA
 
 ```
 #!/bin/bash
-#SBATCH --job-name=fannotate
+#SBATCH --job-name=fannotate_train
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=20gb
-#SBATCH --time=22:00:00
+#SBATCH --mem=32gb
+#SBATCH --time=120:00:00
 #SBATCH --output=fannotate_%j.log
 date;hostname;pwd
 
@@ -261,6 +261,7 @@ module purge; module load funannotate/1.8.13
 funannotate train -i masked_genome.fasta -s 2017RNALibPool01-7_S7_L001_R2_001.fastq.gz --pacbio_isoseq instar4_isoseq.fa --species "Actias luna" -o out
 
 date
+
 ```
 
 ## **12/7/2022; Feature Annotation – Building the Gene Model in FunAnnotate (cont.)**
@@ -279,15 +280,15 @@ Once the training step from 12/5 has completed, and using the example code above
 #SBATCH --job-name=fannotate
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=20gb
-#SBATCH --time=22:00:00
+#SBATCH --mem=32gb
+#SBATCH --time=120:00:00
 #SBATCH --output=fannotate_%j.log
 date;hostname;pwd
 
 module purge; module load funannotate/1.8.13
 
 funannotate predict -i masked_genome.fasta --species "Actias luna" \
-    --transcript_evidence [INSERT TRINITY.FASTA] --pacbio_isoseq instar4_isoseq.fa
+    --transcript_evidence trinity.fasta.clean --pacbio_isoseq iso-seq.fasta.clean
 
 date
 
