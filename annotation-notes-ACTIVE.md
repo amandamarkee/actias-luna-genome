@@ -369,3 +369,70 @@ Temporary directory:
 Opening the database...  [0s]
 Error: Incomplete database file. Database building did not complete successfully.
 ```
+
+Because I am having too many issues getting FunAnnotate to work correctly, I am switching to the BRAKER2 pipeline. This will include all annotation steps thus far until building the gene model (ie. RepeatMasker and RepeatModeler steps are still relevant). 
+
+## 1/16/2023; Feature Annotation – Building the Gene Model in BRAKER2
+
+To build the feature (also known as structural) annotation in BRAKER2, I will be following a slightly modified pipeline provided by [Dr. Keating Godfrey's](https://github.com/rkeatinggodfrey/Hyles_lineata_genome/tree/main/Annotation) annotation of the Hyles liniata genome. I created my softmasked genome using RepeatMasker and RepeatModeler, and now I am moving forward with using hits from a protien database, RNA seq data for _A.luna_, as well as PacBio IsoSeq transcriptome data as evidence for building my gene model. Because Dr. Godfrey's annotation notes do not use long read IsoSeq data, I will use a [slightly modified annotation protocol](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md) which incorporates long-read data, from Gaius-Augustus.
+
+![Screen Shot 2023-01-16 at 1 37 42 PM](https://user-images.githubusercontent.com/56971761/212746627-d47f8945-a360-4bc6-91a5-6293528f4751.png)
+
+## 1/16/2023; Feature Annotation – BRAKER2 setup
+
+All BRAKER2 annotation will be done in the following directory:
+
+```
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2
+```
+
+Below is a complete list of all necessary input files and their names used in this annotation:
+
+    1. masked_genome.fasta - genome sequence in FASTA format that has been softmasked for repeats
+
+    2. transcript.alignments.bam - spliced alignments of short-read RNA-Seq in BAM format (RNA-Seq hints can be used instead of the BAM file, see the  documentation of BRAKER for usage information)
+
+    3. B_mori_protein.fasta - a large database of protein sequences in FASTA format (e.g. a suitable OrthoDB partition)
+
+    4.  subreads1.fastq,subreads2.fastq,subreads3.fastq,... - list of assembled subread libraries from long-read RNA-Seq as FASTQ files (protocol has only been tested with PacBio ccs reads)
+
+Note: I will be using subreads that came off of PacBio Sequel IIe, which are in bam format. I will be using [this protocol](https://bedtools.readthedocs.io/en/latest/content/tools/bamtofastq.html) to convert bam to fastq. 
+
+
+## Step 1 of BRAKER2 Feature Annotation – Retrieve protein sequences
+### Retrieve protein sequences from a well-annotated, closely related species
+
+I downloaded B. mori protein sequences into the folder where I am running BRAKER2
+
+Script to download from NCBI:
+
+```
+#!/bin/bash
+#SBATCH --job-name=ncbi_download
+#SBATCH -o %A_%a.220701_NCBI_Download.out
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=8gb
+#SBATCH -t 02:00:00
+#SBATCH --account=kawahara
+#SBATCH --qos=kawahara
+
+module load edirect/12.2
+
+## Retrieve Bombyx mori protein and mRNA
+
+esearch -db protein -query "Bombyx mori [ORGN]" | efetch -format fasta > B_mori_protein.fasta
+```
+
+Check how many proteins are in this file: 
+```
+grep ">" B_mori_protein.fasta | wc -l
+```
+
+XXXXX proteins are present. This file will now be used as protein evidence for BRAKER2
+
+
+
+
+
