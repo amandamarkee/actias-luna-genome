@@ -374,11 +374,17 @@ Because I am having too many issues getting FunAnnotate to work correctly, I am 
 
 ## 1/16/2023; Feature Annotation – Building the Gene Model in BRAKER2
 
-To build the feature (also known as structural) annotation in BRAKER2, I will be following a slightly modified pipeline provided by [Dr. Keating Godfrey's](https://github.com/rkeatinggodfrey/Hyles_lineata_genome/tree/main/Annotation) annotation of the Hyles liniata genome. I created my softmasked genome using RepeatMasker and RepeatModeler, and now I am moving forward with using hits from a protien database, RNA seq data for _A.luna_, as well as PacBio IsoSeq transcriptome data as evidence for building my gene model. Because Dr. Godfrey's annotation notes do not use long read IsoSeq data, I will use a [slightly modified annotation protocol](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md) which incorporates long-read data, from Gaius-Augustus.
+To build the feature (also known as structural) annotation in BRAKER2, I will be following the pipeline provided by [Dr. Keating Godfrey's](https://github.com/rkeatinggodfrey/Hyles_lineata_genome/tree/main/Annotation) annotation of the Hyles liniata genome. I created my softmasked genome using RepeatMasker and RepeatModeler, and now I am moving forward with using hits from a protien database, RNA seq data for _A.luna_, as well as PacBio IsoSeq transcriptome data as evidence for building my gene model. Because Dr. Godfrey's annotation notes do not use long read IsoSeq data, I will first conduct her pipeline entirely without my IsoSeq data, and then use use a [slightly modified annotation protocol](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md) which incorporates long-read data, at a later date.
 
 ![Screen Shot 2023-01-16 at 1 37 42 PM](https://user-images.githubusercontent.com/56971761/212746627-d47f8945-a360-4bc6-91a5-6293528f4751.png)
 
 ## 1/16/2023; Feature Annotation – BRAKER2 setup
+
+Resources:
+
+Running BRAKER with proteins of any evolutionary distance:
+Running BRAKER with RNA-seq data: https://github.com/Gaius-Augustus/BRAKER#braker-with-rna-seq-data
+Output files: https://github.com/Gaius-Augustus/BRAKER#output-of-braker
 
 All BRAKER2 annotation will be done in the following directory:
 
@@ -386,7 +392,7 @@ All BRAKER2 annotation will be done in the following directory:
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2
 ```
 
-Below is a complete list of all necessary input files and their names used in this annotation:
+Below is a complete list of allinput files and their names used in this annotation:
 
     1. masked_genome.fasta - genome sequence in FASTA format that has been softmasked for repeats
 
@@ -400,6 +406,8 @@ Note: I will be using instar subreads (input file #4) that came off of PacBio Se
 
 
 ## Step 1 of BRAKER2 Feature Annotation – Retrieve protein sequences
+## (a) Retrieve protein sequences
+
 ### Retrieve protein sequences from a well-annotated, closely related species
 
 I downloaded B. mori protein sequences into the folder where I am running BRAKER2
@@ -430,8 +438,38 @@ Check how many proteins are in this file:
 grep ">" B_mori_protein.fasta | wc -l
 ```
 
-XXXXX proteins are present. This file will now be used as protein evidence for BRAKER2
+35408 proteins are present. This file will now be used as protein evidence for BRAKER2
 
+
+## (b) Run [ProtHint](https://github.com/gatech-genemark/ProtHint#protein-database-preparation) to create protein gff file.
+
+Use the following script execution on the both the masked genome and protein fasta as input files:
+
+```
+sbatch -J Al_ProtHint prothint.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/B_mori_protein.fasta
+```
+
+```
+#!/bin/bash
+#SBATCH --job-name=%x_%j
+#SBATCH --output=%x_%j.log
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=4gb
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+
+dates;hostname;pwd
+
+genome=${1}
+protein=${2}
+
+module load prothint/2.6.0
+module load genemark_es/4.69
+
+prothint.py --threads ${SLURM_CPUS_ON_NODE:-1} ${genome} ${protein}
+```
 
 
 
