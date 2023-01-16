@@ -394,9 +394,9 @@ Below is a complete list of all necessary input files and their names used in th
 
     3. B_mori_protein.fasta - a large database of protein sequences in FASTA format (e.g. a suitable OrthoDB partition)
 
-    4.  subreads1.fastq,subreads2.fastq,subreads3.fastq,... - list of assembled subread libraries from long-read RNA-Seq as FASTQ files (protocol has only been tested with PacBio ccs reads)
+    4.  instar1.fastq,instar2.fastq,instar3.fastq,... - list of assembled subread libraries from long-read RNA-Seq as FASTQ files (protocol has only been tested with PacBio ccs reads)
 
-Note: I will be using subreads that came off of PacBio Sequel IIe, which are in bam format. I will be using [this protocol](https://bedtools.readthedocs.io/en/latest/content/tools/bamtofastq.html) to convert bam to fastq. 
+Note: I will be using instar subreads (input file #4) that came off of PacBio Sequel IIe, which are in bam format. I will be using [this protocol](https://bedtools.readthedocs.io/en/latest/content/tools/bamtofastq.html) to convert bam to fastq. 
 
 
 ## Step 1 of BRAKER2 Feature Annotation – Retrieve protein sequences
