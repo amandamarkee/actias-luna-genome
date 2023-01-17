@@ -471,6 +471,33 @@ module load genemark_es/4.69
 prothint.py --threads ${SLURM_CPUS_ON_NODE:-1} ${genome} ${protein}
 ```
 
+## (c) Run BRAKER2 with protein evidence
 
+Now that the ProtHint .gff file is completed, we can use this as protein evidence for runnning BRAKER2. Use the following command to execute the code below it.
 
+```
+sbatch -J Al_prot_braker2 Al_braker2_protein.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/prothint_augustus.gff Actias_luna
+```
+```
+#!/bin/bash
+#SBATCH --job-name=%j_Al_braker2_prot
+#SBATCH --output=%j_Al_braker2_prot.log
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=8gb
+#SBATCH --time=96:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+dates;hostname;pwd
 
+genome=${1}
+protein_gff=${2}
+species=${3}
+
+module load conda
+module load braker/2.1.6
+
+braker.pl \
+--AUGUSTUS_CONFIG_PATH=/blue/kawahara/rkeating.godfrey/Hyles_lineata_genome/Hl_busco/Augustus/config \
+--genome=${genome} --species ${species} --hints=${protein_gff} --softmasking --gff3 --cores 32 --AUGUSTUS_ab_initio
+```
