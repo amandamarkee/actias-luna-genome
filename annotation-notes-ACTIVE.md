@@ -533,3 +533,57 @@ mkdir isoseq_raw_bam
 mv *.bam isoseq_raw_bam/
 ```
 
+Next, I concatenate all subread libraries (instar1-instar5) files into a single file:
+```
+cat instar1.fq instar2.fq instar3.fq instar4.fq instar5.fq > all.subreads.fastq
+```
+
+## (b) Use minimap2 to map transcripts to genome
+
+Use Minimap2 to map the transcripts to the genome sequence, and then sort the result.The final output will be called Al_isoseq_final.bam:
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2 all.subreads.fastq Al_isoseq_final
+```
+
+```
+#!/bin/bash
+#SBATCH --job-name=%x_minimap_%j
+#SBATCH -o %x_minimap_%j.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=8gb
+#SBATCH -t 24:00:00
+#SBATCH -c 32
+
+module load minimap/2.21
+module load samtools/1.15
+
+genome=${1}
+read=${2}
+prefix=${3}
+
+minimap2 -t 8 -ax map-pb ${genome} ${read} --secondary=no | samtools sort -m 1G -o ${prefix}.bam -T tmp.ali
+```
+
+## (c) Collapse redundant isoforms in Cupcake
+
+
+Next, we collapse redundant isoforms using a script from Cupcake. Make sure to module load cupcake to have access to the collapse isoforms script. Note: [the GitHub](https://github.com/Magdoll/cDNA_Cupcake/wiki/Cupcake:-supporting-scripts-for-Iso-Seq-after-clustering-step#collapse-redundant-isoforms-has-genome) mentions implementing this as isoseq3? Look into this later.
+
+```
+module load cupcake
+collapse_isoforms_by_sam.py --input all.subreads.fastq --fq  -s Al_isoseq_final.sam --dun-merge-5-shorter -o cupcake
+
+```
+
+Note: This code gives me the following error, which I will pick up on tomorrow.
+```
+File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 245, in <module>
+    main(args)
+  File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 169, in main
+    check_ids_unique(args.input, is_fq=args.fq)
+  File "/apps/cupcake/22.0.0/lib/python3.9/site-packages/cupcake/tofu/utils.py", line 13, in check_ids_unique
+    raise Exception("Duplicate id {0} detected. Abort!".format(r.id))
+Exception: Duplicate id m64219e_220708_202551/155/ccs detected. Abort!
+```
