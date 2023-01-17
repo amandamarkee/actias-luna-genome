@@ -405,7 +405,7 @@ Below is a complete list of allinput files and their names used in this annotati
 Note: I will be using instar subreads (input file #4) that came off of PacBio Sequel IIe, which are in bam format. I will be using [this protocol](https://bedtools.readthedocs.io/en/latest/content/tools/bamtofastq.html) to convert bam to fastq. 
 
 
-## Step 1 of BRAKER2 Feature Annotation – Retrieve protein sequences
+## Step 1 of BRAKER2 Feature Annotation – Running with protein sequences
 ## (a) Retrieve protein sequences
 
 ### Retrieve protein sequences from a well-annotated, closely related species
@@ -501,3 +501,35 @@ braker.pl \
 --AUGUSTUS_CONFIG_PATH=/blue/kawahara/rkeating.godfrey/Hyles_lineata_genome/Hl_busco/Augustus/config \
 --genome=${genome} --species ${species} --hints=${protein_gff} --softmasking --gff3 --cores 32 --AUGUSTUS_ab_initio
 ```
+
+## Step 2 of BRAKER2 Feature Annotation – Running with RNAseq data
+(Add once RNAseq breaker is done. Add from local TextWrangler notes)
+
+
+## Step 3 of BRAKER2 Feature Annotation – Running with IsoSeq (long-read) data
+
+For the third run of BRAKER, I am using a new [modified pipeline](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md#braker2) specifically for PacBio HiFi long reads.
+
+From this protocol, I will be picking up starting at the BRAKER2 step, since I have already run BRAKER on protein evidence following Dr. Godfrey's protocol in Step 1. 
+
+## (a) Convert IsoSeq raw .bam reads to .fastq
+
+All IsoSeq BRAKER steps will be run in the following directory:
+```
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+```
+
+First I requested a development node, and ran the following commands using the bedtools module to convert all .bam files to .fastq:
+
+```
+srundev
+bedtools bamtofastq -i instar1.bam -fq instar1.fq
+bedtools bamtofastq -i instar2.bam -fq instar2.fq
+bedtools bamtofastq -i instar3.bam -fq instar3.fq
+bedtools bamtofastq -i instar4.bam -fq instar4.fq
+bedtools bamtofastq -i instar5.bam -fq instar5.fq
+
+mkdir isoseq_raw_bam 
+mv *.bam isoseq_raw_bam/
+```
+
