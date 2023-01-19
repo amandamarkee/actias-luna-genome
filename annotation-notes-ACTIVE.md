@@ -503,7 +503,203 @@ braker.pl \
 ```
 
 ## Step 2 of BRAKER2 Feature Annotation – Running with RNAseq data
-(Add once RNAseq breaker is done. Add from local TextWrangler notes)
+
+Directories for running BRAKER with RNAseq data:
+```
+### raw RNAseq data files
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/trimmomatic/RAW_rnaseq 
+
+### trimmed RNAseq data files
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/trimmomatic/trimmed 
+
+### parent folder for scripts and outputs related to braker
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2 
+```
+
+List of RNAseq files and important metadata:
+```
+2017RNALibPool02-10_S21_L002_R1_001.fastq.gz    2017RNALibPool02-10_S21_L002_R2_001.fastq.gz        luna_10_head		Pupa
+2017RNALibPool02-11_S22_L002_R1_001.fastq.gz    2017RNALibPool02-11_S22_L002_R2_001.fastq.gz        luna_10_thorax		Pupa
+2017RNALibPool03-1_S23_L003_R1_001.fastq.gz     2017RNALibPool03-1_S23_L003_R2_001.fastq.gz         luna_11_head		Pupa
+2017RNALibPool03-2_S24_L003_R1_001.fastq.gz     2017RNALibPool03-2_S24_L003_R2_001.fastq.gz         luna_11_thorax		Pupa
+2017RNALibPool03-3_S25_L003_R1_001.fastq.gz     2017RNALibPool03-3_S25_L003_R2_001.fastq.gz         luna_11_abdomen		Pupa
+2017RNALibPool03-4_S26_L003_R1_001.fastq.gz     2017RNALibPool03-4_S26_L003_R2_001.fastq.gz         luna_12_head		Pupa
+2017RNALibPool03-5_S27_L003_R1_001.fastq.gz     2017RNALibPool03-5_S27_L003_R2_001.fastq.gz         luna_12_thorax		Pupa
+2017RNALibPool03-6_S28_L003_R1_001.fastq.gz     2017RNALibPool03-6_S28_L003_R2_001.fastq.gz         luna_12_abdomen		Pupa
+2017RNALibPool03-7_S29_L003_R1_001.fastq.gz     2017RNALibPool03-7_S29_L003_R2_001.fastq.gz         luna_14_head		Adult
+2017RNALibPool03-8_S30_L003_R1_001.fastq.gz     2017RNALibPool03-8_S30_L003_R2_001.fastq.gz         luna_14_thorax		Adult
+2017RNALibPool03-9_S31_L003_R1_001.fastq.gz     2017RNALibPool03-9_S31_L003_R2_001.fastq.gz         luna_14_abdomen		Adult
+2017RNALibPool03-10_S32_L003_R1_001.fastq.gz    2017RNALibPool03-10_S32_L003_R2_001.fastq.gz        luna_15_head		Adult
+2017RNALibPool03-11_S33_L003_R1_001.fastq.gz    2017RNALibPool03-11_S33_L003_R2_001.fastq.gz        luna_15_thorax		Adult
+2017RNALibPool03-12_S34_L003_R1_001.fastq.gz    2017RNALibPool03-12_S34_L003_R2_001.fastq.gz        luna_15_abdomen		Adult
+2017RNALibPool04-1_S35_L004_R1_001.fastq.gz     2017RNALibPool04-1_S35_L004_R2_001.fastq.gz         luna_16_wholebody	        1st instar
+2017RNALibPool01-1_S1_L001_R1_001.fastq.gz      2017RNALibPool01-1_S1_L001_R2_001.fastq.gz          luna_01_head		4th instar
+2017RNALibPool01-2_S2_L001_R1_001.fastq.gz      2017RNALibPool01-2_S2_L001_R2_001.fastq.gz          luna_01_thorax		4th instar
+2017RNALibPool01-3_S3_L001_R1_001.fastq.gz      2017RNALibPool01-3_S3_L001_R2_001.fastq.gz          luna_01_abdomen		4th instar
+2017RNALibPool01-4_S4_L001_R1_001.fastq.gz      2017RNALibPool01-4_S4_L001_R2_001.fastq.gz          luna_02_head		4th instar
+2017RNALibPool01-5_S5_L001_R1_001.fastq.gz      2017RNALibPool01-5_S5_L001_R2_001.fastq.gz          luna_02_thorax		4th instar
+2017RNALibPool07-1_S68_L007_R1_001.fastq.gz     2017RNALibPool07-1_S68_L007_R2_001.fastq.gz         luna_02_abdomen		4th instar
+2017RNALibPool01-6_S6_L001_R1_001.fastq.gz      2017RNALibPool01-6_S6_L001_R2_001.fastq.gz          luna_03_wholebody           6-eggs
+2017RNALibPool01-7_S7_L001_R1_001.fastq.gz      2017RNALibPool01-7_S7_L001_R2_001.fastq.gz          luna_04_wholebody           1st instar
+2017RNALibPool01-8_S8_L001_R1_001.fastq.gz      2017RNALibPool01-8_S8_L001_R2_001.fastq.gz          luna_05_wholebody           1st instar
+2017RNALibPool01-10_S10_L001_R1_001.fastq.gz    2017RNALibPool01-10_S10_L001_R2_001.fastq.gz        luna_06_thorax		4th instar
+2017RNALibPool01-11_S11_L001_R1_001.fastq.gz    2017RNALibPool01-11_S11_L001_R2_001.fastq.gz        luna_06_abdomen		4th instar
+2017RNALibPool01-9_S9_L001_R1_001.fastq.gz      2017RNALibPool01-9_S9_L001_R2_001.fastq.gz          luna_06_head		4th instar
+2017RNALibPool02-1_S12_L002_R1_001.fastq.gz     2017RNALibPool02-1_S12_L002_R2_001.fastq.gz         luna_07_head		Pre-pupa
+2017RNALibPool02-2_S13_L002_R1_001.fastq.gz     2017RNALibPool02-2_S13_L002_R2_001.fastq.gz         luna_07_thorax		Pre-pupa
+2017RNALibPool02-3_S14_L002_R1_001.fastq.gz     2017RNALibPool02-3_S14_L002_R2_001.fastq.gz         luna_07_abdomen		Pre-pupa
+2017RNALibPool02-4_S15_L002_R1_001.fastq.gz     2017RNALibPool02-4_S15_L002_R2_001.fastq.gz         luna_08_head		Pre-pupa
+2017RNALibPool02-5_S16_L002_R1_001.fastq.gz     2017RNALibPool02-5_S16_L002_R2_001.fastq.gz         luna_08_thorax		Pre-pupa
+2017RNALibPool02-6_S17_L002_R1_001.fastq.gz     2017RNALibPool02-6_S17_L002_R2_001.fastq.gz         luna_08_abdomen		Pre-pupa
+2017RNALibPool02-7_S18_L002_R1_001.fastq.gz     2017RNALibPool02-7_S18_L002_R2_001.fastq.gz         luna_09_head		Pre-pupa
+2017RNALibPool02-8_S19_L002_R1_001.fastq.gz     2017RNALibPool02-8_S19_L002_R2_001.fastq.gz         luna_09_thorax		Pre-pupa
+2017RNALibPool02-9_S20_L002_R1_001.fastq.gz     2017RNALibPool02-9_S20_L002_R2_001.fastq.gz         luna_09_abdomen		Pre-pupa
+2017RNALibPool05-8_S53_L005_R1_001.fastq.gz     2017RNALibPool05-8_S53_L005_R2_001.fastq.gz         luna_13_thorax		Adult
+2017RNALibPool07-10_S77_L007_R1_001.fastq.gz    2017RNALibPool07-10_S77_L007_R2_001.fastq.gz        luna_13_abdomen		Adult
+    	
+```
+
+## (a) Trim RNAseq reads
+
+To trim the reads, I use the following Trimmomatic script for all of the .fastq files in the list above.
+
+```
+#!/bin/bash
+#SBATCH --job-name=trimmomatic_Al
+#SBATCH --output=%x_%j.log
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=4gb
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+
+module load trimmomatic/0.39
+
+for sample in $(ls *fastq.gz | cut -d "_" -f 1,2,3 | sort | uniq)
+do
+    fq1=$(ls ${sample}_R1*)
+    fq2=$(ls ${sample}_R2*)
+    trimmomatic PE -threads 16 \
+    ${fq1} ${fq2} \
+    ${sample}_R1_clean.fastq.gz ${sample}_R1_unpaired.fastq.gz \
+    ${sample}_R2_clean.fastq.gz ${sample}_R2_unpaired.fastq.gz LEADING:3 TRAILING:3 MINLEN:36
+done
+```
+
+## (b) Combine tissues of same samples per life stage
+
+Due to the nature of pooling our RNAseq data, there are reads for different tissues of the same individual. For this annotation, I use one sample from the following life stages: 4th instar (luna_01), eggs (luna_03), 1st instar (luna_05), prepupa (luna_07), pupa (luna_12), and adult (luna_14).
+
+To combine samples of the same tissue, I use the following cat commands:
+```
+Pre-pupa (luna_07)
+### combine R1 files 
+```cat 2017RNALibPool02-1_S12_L002_R1_clean.fastq.gz 2017RNALibPool02-2_S13_L002_R1_clean.fastq.gz 2017RNALibPool02-3_S14_L002_R1_clean.fastq.gz > luna_07_prepupa_R1.fastq.gz```
+### combine R2 files
+```cat 2017RNALibPool02-1_S12_L002_R2_clean.fastq.gz 2017RNALibPool02-2_S13_L002_R2_clean.fastq.gz 2017RNALibPool02-3_S14_L002_R2_clean.fastq.gz > luna_07_prepupa_R2.fastq.gz```
+
+
+Pupa (luna_12)
+```cat 2017RNALibPool03-4_S26_L003_R1_clean.fastq.gz 2017RNALibPool03-5_S27_L003_R1_clean.fastq.gz 2017RNALibPool03-6_S28_L003_R1_clean.fastq.gz > luna_12_pupa_R1.fastq.gz```
+```cat 2017RNALibPool03-4_S26_L003_R2_clean.fastq.gz 2017RNALibPool03-5_S27_L003_R2_clean.fastq.gz 2017RNALibPool03-6_S28_L003_R2_clean.fastq.gz > luna_12_pupa_R2.fastq.gz```
+
+
+4th Instar (luna_01)
+```cat 2017RNALibPool01-1_S1_L001_R1_clean.fastq.gz 2017RNALibPool01-2_S2_L001_R1_clean.fastq.gz 2017RNALibPool01-3_S3_L001_R1_clean.fastq.gz > luna_01_instar4_R1.fastq.gz```
+```cat 2017RNALibPool01-1_S1_L001_R2_clean.fastq.gz 2017RNALibPool01-2_S2_L001_R2_clean.fastq.gz 2017RNALibPool01-3_S3_L001_R2_clean.fastq.gz > luna_01_instar4_R2.fastq.gz```
+
+
+Adult (luna_14)
+```cat 2017RNALibPool03-7_S29_L003_R1_clean.fastq.gz 2017RNALibPool03-8_S30_L003_R1_clean.fastq.gz 2017RNALibPool03-9_S31_L003_R1_clean.fastq.gz > luna_14_adult_R1.fastq.gz```
+```cat 2017RNALibPool03-7_S29_L003_R2_clean.fastq.gz 2017RNALibPool03-8_S30_L003_R2_clean.fastq.gz 2017RNALibPool03-9_S31_L003_R2_clean.fastq.gz > luna_14_adult_R2.fastq.gz```
+
+Eggs (luna_03)
+```mv 2017RNALibPool01-6_S6_L001_R1_clean.fastq.gz luna_03_egg_R1.fastq.gz```
+```mv 2017RNALibPool01-6_S6_L001_R2_clean.fastq.gz luna_03_egg_R2.fastq.gz```
+
+
+1st Instar RNAseq (luna_05)
+```mv 2017RNALibPool01-8_S8_L001_R1_clean.fastq.gz luna_05_instar1_R1.fastq.gz```
+```mv 2017RNALibPool01-8_S8_L001_R2_clean.fastq.gz luna_05_instar1_R2.fastq.gz```
+```
+
+I created a braker folder for the RNA evidence run and moved these files there:
+
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna
+mv /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/trimmomatic/RAW_rnaseq/TRIMMED/luna_* /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna
+```
+
+## (c) Run hisat2 to align transcripts to the genome assembly
+
+I use the following script, with the combined cat files above as my transcript input files:
+
+```
+#!/bin/bash
+#SBATCH --job-name=Al_hisat2
+#SBATCH --output=hisat2_%j.log
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=8gb
+#SBATCH --time=48:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+
+module load hisat2
+module load samtools
+
+hisat2-build /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/Al_index
+
+for sample in $(ls /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/*fastq.gz | cut -d "_" -f 1,2,3,4,5,6,7 | sort | uniq)
+do
+    fq1=$(ls ${sample}_R1*)
+    fq2=$(ls ${sample}_R2*)
+    name=$(echo ${sample} | cut -d "_" -f 1,2,3)
+    hisat2 -p 32 \
+    -x /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/Al_index \
+    -1 ${fq1} -2 ${fq2} --phred33 --rna-strandness FR | samtools sort -@ 10 -O BAM -o Al_Al_aln.bam
+done
+```
+
+The .log output file will contain mapping prercentages. For these files the mapping rates were:
+- 4th instar (luna_01): 90.82%
+- eggs (luna_03): 89.12%
+- 1st instar (luna_05): 90.12%
+- prepupa (luna_07): 90.31%
+- pupa (luna_12): 88.07%
+- adult (luna_14): 89.33%
+
+## (d) Run BRAKER2 with aln.bam file
+
+Lastly, I ran BRAKER with the output from hisat2 using the following command and script:
+
+```sbatch -J Al_braker_RNAseq /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/scripts/braker2_RNAseq.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta aluna```
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=%x_%j
+#SBATCH --output=%x_%j.log
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mem-per-cpu=8gb
+#SBATCH --time=96:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+dates;hostname;pwd
+
+genome=${1}
+species=${2}
+
+module load conda
+module load braker/2.1.6
+
+braker.pl \
+--AUGUSTUS_CONFIG_PATH=/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config \
+--genome=${genome} --species ${species} \
+--bam=/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Al.Al.aln.bam \
+--softmasking --gff3 --cores 32 --AUGUSTUS_ab_initio
+```
 
 
 ## Step 3 of BRAKER2 Feature Annotation – Running with IsoSeq (long-read) data
@@ -586,4 +782,18 @@ File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 245, in <modul
   File "/apps/cupcake/22.0.0/lib/python3.9/site-packages/cupcake/tofu/utils.py", line 13, in check_ids_unique
     raise Exception("Duplicate id {0} detected. Abort!".format(r.id))
 Exception: Duplicate id m64219e_220708_202551/155/ccs detected. Abort!
+```
+
+## (d) Final organization
+
+I organized my output files for each braker run in the following directories:
+```
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+```
+
+I also moved all of my scripts to this folder:
+```
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/scripts
 ```
