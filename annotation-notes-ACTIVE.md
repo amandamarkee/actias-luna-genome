@@ -773,7 +773,7 @@ collapse_isoforms_by_sam.py --input all.subreads.fastq --fq  -s Al_isoseq_final.
 
 ```
 
-Note: This code gives me the following error, which I will pick up on tomorrow.
+Note: This code gives me the following error, so I have put in a request to HiPerGator to update their isoseq3 module to use instead of Cupcake for isoform collapsing.
 ```
 File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 245, in <module>
     main(args)
@@ -784,7 +784,8 @@ File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 245, in <modul
 Exception: Duplicate id m64219e_220708_202551/155/ccs detected. Abort!
 ```
 
-## (d) Final organization
+
+## (d) File organization
 
 I organized my output files for each braker run in the following directories:
 ```
@@ -797,3 +798,141 @@ I also moved all of my scripts to this folder:
 ```
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/scripts
 ```
+
+
+## Evaluate gene models produced by braker2 
+
+To evaluate the success of our gene models (of all 3 BRAKER2 runs), I used the BUSCO Lepidoptera ortholog database (odb10_lepidoptera).
+
+## (a) From Bombyx mori protein evidence 
+
+```
+sbatch Al_Bm_prot_model_busco.sh
+```
+
+```
+#!/bin/bash
+#SBATCH --job-name=Al_lep_all_genemodel_busco
+#SBATCH -o Al_lep_all_genemodel_busco.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 5:00:00
+#SBATCH -c 12
+
+# define configure file for BUSCO and augustus
+# For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+
+# load busco, make sure this is the latest version
+module load busco/5.3.0
+module load hmmer/3.2.1
+
+# run busco command
+busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.aa \
+ -o ./Al_Bm_genemod_busco_out \
+ -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
+ -m protein -c 12
+```
+
+Results:
+
+	- C:95.1%[S:88.3%,D:6.8%],F:1.2%,M:3.7%,n:5286	   
+	- 5028	Complete BUSCOs (C)			   
+	- 4669	Complete and single-copy BUSCOs (S)	   
+	- 359	Complete and duplicated BUSCOs (D)	   
+	- 66	Fragmented BUSCOs (F)			   
+	- 192	Missing BUSCOs (M)			   
+	- 5286	Total BUSCO groups searched
+    
+To determine how many genes were predicted using B.mori protein evidence, I used this command:
+```
+grep ">" augustus.hints.aa | wc -l
+20801 genes
+```
+
+## (b) From Actias luna RNAseq evidence
+
+```
+sbatch Al_RNAseq_model_busco.sh
+```
+
+```
+#!/bin/bash
+#SBATCH --job-name=Al_lep_RNA_genemodel_busco
+#SBATCH -o Al_lep_RNA_genemodel_busco.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 5:00:00
+#SBATCH -c 12
+
+# define configure file for BUSCO and augustus
+# For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+
+# load busco, make sure this is the latest version
+module load busco/5.3.0
+module load hmmer/3.2.1
+
+# run busco command
+busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.aa \
+ -o ./Al_RNA_genemod_busco_out \
+ -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
+ -m protein -c 12 
+```
+
+Results:
+	- C:97.2%[S:84.0%,D:13.2%],F:1.0%,M:1.8%,n:5286	   
+	- 5140	Complete BUSCOs (C)			   
+	- 4440	Complete and single-copy BUSCOs (S)	   
+	- 700	Complete and duplicated BUSCOs (D)	   
+	- 51	Fragmented BUSCOs (F)			   
+	- 95	Missing BUSCOs (M)			   
+	- 5286	Total BUSCO groups searched
+
+To determine how many genes were predicted using A.luna RNAseq evidence, I used this command:
+```
+grep ">" augustus.hints.aa | wc -l
+21773 genes
+```
+
+## (c) From Actias luna long-read IsoSeq evidence
+
+```
+sbatch Al_IsoSeq_model_busco.sh
+```
+
+```
+#!/bin/bash
+#SBATCH --job-name=Al_lep_IsoSeq_genemodel_busco
+#SBATCH -o l_lep_IsoSeq_genemodel_busco.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 5:00:00
+#SBATCH -c 12
+
+# define configure file for BUSCO and augustus
+# For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+
+# load busco, make sure this is the latest version
+module load busco/5.3.0
+module load hmmer/3.2.1
+
+# run busco command
+busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq/augustus.hints.aa \
+-o ./Al_IsoSeq_genemod_busco_out \
+-l /data/reference/busco/v5/lineages/endopterygota_odb10 \
+-m protein -c 12
+```
+
+Note: I will run this once my isoseq3 collapse script is complete (1/19/2023). In the meantime, I'm going to combine both RNAseq and protein evidence BRAKER results in TSEBRA.
+
+
+## Genome Annotation: Combine BRAKER2 outputs in TSEBRA
+
