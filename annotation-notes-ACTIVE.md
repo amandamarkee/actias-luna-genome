@@ -936,6 +936,7 @@ Note: I will run this once my isoseq3 collapse script is complete (1/19/2023). I
 
 ## Genome Annotation: Combine BRAKER2 outputs in TSEBRA
 
+## (a) Combine gene models from protein and transcriptome evidence
 
 [TSEBRA Github](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jmor.21510) is a transcript selector that allows you to combine the Braker outputs from different evidence into a single list of transcripts / predicted amino acid sequences.
 
@@ -982,3 +983,42 @@ grep ">" Hl_all_tsebra_aa.fa | wc -l
 34282
 ```
 
+## (b) Run BUSCO on this gene model set
+
+```
+#!/bin/bash
+#SBATCH --job-name=Al_lep_all_genemodel_busco
+#SBATCH -o Al_lep_allc_genemodel_busco.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 5:00:00
+#SBATCH -c 12
+
+# define configure file for BUSCO and augustus
+# For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+
+# load busco, make sure this is the latest version
+module load busco/5.3.0
+module load hmmer/3.2.1
+
+# run busco command
+busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/Al_all_tsebra_aa.fa \
+ -o ./Al_all_genemod_busco_out \
+ -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
+ -m protein -c 12
+```
+
+Results:
+
+	- C:98.9%[S:55.4%,D:43.5%],F:0.5%,M:0.6%,n:5286	   
+	- 5229	Complete BUSCOs (C)			   
+	- 2931	Complete and single-copy BUSCOs (S)	   
+	- 2298	Complete and duplicated BUSCOs (D)	   
+	- 25	Fragmented BUSCOs (F)			   
+	- 32	Missing BUSCOs (M)			   
+	- 5286	Total BUSCO groups searched
+	
+Note: The duplication rate here is reeeeally high. Investigating this further.
