@@ -835,7 +835,7 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/b
  -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
  -m protein -c 12
 ```
-
+```
 Results:
 
 	- C:95.1%[S:88.3%,D:6.8%],F:1.2%,M:3.7%,n:5286	   
@@ -845,7 +845,8 @@ Results:
 	- 66	Fragmented BUSCOs (F)			   
 	- 192	Missing BUSCOs (M)			   
 	- 5286	Total BUSCO groups searched
-    
+```
+
 To determine how many genes were predicted using B.mori protein evidence, I used this command:
 ```
 grep ">" augustus.hints.aa | wc -l
@@ -883,7 +884,7 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/b
  -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
  -m protein -c 12 
 ```
-
+```
 Results:
 	- C:97.2%[S:84.0%,D:13.2%],F:1.0%,M:1.8%,n:5286	   
 	- 5140	Complete BUSCOs (C)			   
@@ -892,6 +893,7 @@ Results:
 	- 51	Fragmented BUSCOs (F)			   
 	- 95	Missing BUSCOs (M)			   
 	- 5286	Total BUSCO groups searched
+```
 
 To determine how many genes were predicted using A.luna RNAseq evidence, I used this command:
 ```
