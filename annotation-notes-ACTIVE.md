@@ -286,7 +286,7 @@ For the pipeline I am using, FunAnnotate uses the following steps for annotation
 10. Generate an NCBI annotation table (.tbl format)
 11. Convert to GenBank format using tbl2asn
 12. Parse NCBI error reports and alert user to invalid gene models
-13. 
+
 
 ## **1/11/2023; Feature Annotation – Building the Gene Model in FunAnnotate (cont.)**
 
