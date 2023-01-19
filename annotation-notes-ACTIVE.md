@@ -936,3 +936,49 @@ Note: I will run this once my isoseq3 collapse script is complete (1/19/2023). I
 
 ## Genome Annotation: Combine BRAKER2 outputs in TSEBRA
 
+
+[TSEBRA Github](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jmor.21510) is a transcript selector that allows you to combine the Braker outputs from different evidence into a single list of transcripts / predicted amino acid sequences.
+
+First I cloned the TSEBRA directory into my working annotation directory on the cluster:
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra
+git clone https://github.com/Gaius-Augustus/TSEBRA
+```
+
+Next, I gather the necessary files as we will use them in the TSEBRA script below:
+
+- augustus.hints.gtf files from BRAKER2 protein evidence
+- augustus.hints.gff files from BRAKER2 RNA evidence
+- A configuration (.cfg) file as descirbed [here](https://github.com/Gaius-Augustus/TSEBRA#configuration-file) 
+_Note: You can use the default file located in /TSEBRA/config/default.ctg as a start, but the default is quite strict_
+
+```
+#!/bin/bash
+#SBATCH --job-name=Al_TSEBRA
+#SBATCH -o Al_TSEBRA.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=4gb
+#SBATCH -t 24:00:00
+#SBATCH -c 24
+
+module load python3
+
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/bin/tsebra.py \
+-g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.gtf,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.gtf
+-c /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/config/pref_braker1.cfg \
+-e /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/hintsfile.gff,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/hintsfile.gff \
+-o Al_all_combine.gtf
+
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/scripts/gtf2aa.pl \
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta \
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Al_all_combine_2.gtf \
+Al_all_tsebra_aa.fa
+```
+
+Check how many genes: 
+```
+grep ">" Hl_all_tsebra_aa.fa | wc -l
+34282
+```
+
