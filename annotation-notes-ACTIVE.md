@@ -985,12 +985,15 @@ grep ">" Hl_all_tsebra_aa.fa | wc -l
 34282
 ```
 
+
+
+
 ## (b) Run BUSCO on this gene model set
 
 ```
 #!/bin/bash
 #SBATCH --job-name=Al_lep_all_genemodel_busco
-#SBATCH -o Al_lep_allc_genemodel_busco.log
+#SBATCH -o Al_lep_all_genemodel_busco.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=amanda.markee@ufl.edu
 #SBATCH --mem-per-cpu=4gb
