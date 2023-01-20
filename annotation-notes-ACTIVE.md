@@ -969,13 +969,13 @@ module load python3
 
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/bin/tsebra.py \
 -g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.gtf,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.gtf
--c /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/config/pref_braker1.cfg \
+-c /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/config/default.cfg \
 -e /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/hintsfile.gff,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/hintsfile.gff \
 -o Al_all_combine.gtf
 
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/scripts/gtf2aa.pl \
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Al_all_combine_2.gtf \
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Al_all_combine.gtf \
 Al_all_tsebra_aa.fa
 ```
 
