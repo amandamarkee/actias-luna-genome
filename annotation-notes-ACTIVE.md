@@ -837,7 +837,6 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/b
 ```
 ```
 Results:
-
 	- C:95.1%[S:88.3%,D:6.8%],F:1.2%,M:3.7%,n:5286	   
 	- 5028	Complete BUSCOs (C)			   
 	- 4669	Complete and single-copy BUSCOs (S)	   
