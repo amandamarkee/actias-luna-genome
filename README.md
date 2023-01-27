@@ -1,5 +1,5 @@
 # _Actias luna_ Genome Project
-Genome assembly and annotation workflow for the luna moth, _Actias luna_. This repository format was modified from YiMing Weng's [genome assembly and annotation repository](https://github.com/yimingweng/Kely_genome_project) for the tomato pinworm _Keiferia lycopersicella_.
+Genome assembly and annotation workflow for the luna moth, _Actias luna_. This repository format was modeled from YiMing Weng's [genome assembly and annotation repository](https://github.com/yimingweng/Kely_genome_project) for the tomato pinworm _Keiferia lycopersicella_, and Keating Godfrey's [genome assembly and annotation repository](https://github.com/rkeatinggodfrey/Hyles_lineata_genome) for _Hyles lineata_.
 
 ## Background
 - Moths and butterflies (Lepidoptera) are one of the dominant groups of silk producers in the insect world, but research is severely limited to model organisms such as the domestic silkworm moth (_Bombyx mori_) due to it's economic importance.
