@@ -26,7 +26,13 @@ This section describes the methods I used for both assembling and annotating the
 
 ### Contamination Filtering [(BlobTools)](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md#10042022-contaminaiton-filtering-with-blobtools)
 
-### Feature & Functional Annotation (FunAnnotate)
+### Repeat Element Identification and Masking [(RepeatModeler and RepeatMasker2)](https://github.com/amandamarkee/actias-luna-genome/blob/main/annotation-notes-ACTIVE.md#1092022-annotation--repeatmodeler2)
+
+### (Attempted) Structural Annotation [(Funannotate)](https://github.com/amandamarkee/actias-luna-genome/blob/main/annotation-notes-ACTIVE.md#1252022-feature-annotation--building-the-gene-model-in-funannotate)
+
+### (Successful) Structural Annotation [(BRAKER2)](https://github.com/amandamarkee/actias-luna-genome/blob/main/annotation-notes-ACTIVE.md#1162023-feature-annotation--building-the-gene-model-in-braker2)
+
+### Gene Model Evaluation [(BUSCO)](https://github.com/amandamarkee/actias-luna-genome/blob/main/annotation-notes-ACTIVE.md#evaluate-gene-models-produced-by-braker2)
 
 
 <br />
