@@ -3,6 +3,23 @@
 ## Introduction
 This workflow describes modified methods used for the [IsoSeq bulk workflow](https://isoseq.how/clustering/cli-workflow.html) on five multiplexed _Actias luna_ samples. The goal of this workflow is to align PacBio IsoSeq long reads back to my newly assembled and annotated genome for the Luna moth, to look at differential IsoForm expression across life stages, specific to silk production.
 
+## Working Directories
+
+Working Directory
+```
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq
+```
+
+Run01 (1_H06)
+```
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06
+```
+
+Run02 (1_E06)
+```
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_E06
+```
+
 ## **04/7/2022; Action Items for IsoSeq Analysis**
 
 https://isoseq.how/clustering/high-level-workflow.html
@@ -102,11 +119,33 @@ ggsave("PiV3_Iso.Rplot.num_intron_sizes.png", width=6, height=4.5)
 
 ## 04/10/2022; Run IsoSeq Lima Step 
 
-First, we must make an array script which uses the following line of code in the format of lima input file, primer name file, and output name. Note, here we just use --isoseq flag. When making the array script, we should use 8 cores and 4 hours per sample, and utilize environmental variables for input, primer name file and output. See example code from workflow below.
+First, we must make an array script which uses the following line of code in the format of lima input file, primer name file, and output name. 
+
+_Note, here we just use --isoseq flag. When making the array script, we should use 8 cores and 4 hours per sample, and utilize environmental variables for input, primer name file and output. See example code from workflow below._
 
 ```
 lima movieX.hifi_reads.bam barcoded_primers.fasta movieX.fl.bam --isoseq
 ```
 
+```
+#!/bin/bash
+#SBATCH --job-name=minimap
+#SBATCH -o luna_iso_lima_%j.out
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=16gb
+#SBATCH -t 40:00:00
+#SBATCH -c 16
+date;hostname;pwd
+
+module load isoseq3
+
+lima /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/bc1001--bc1001/ \
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/isoseq_primers.fasta \
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq/iso_lima/m64219e_220708_202551.instar1.bam
+
+# note, this scripti s for one sample, but need to convert to array with environmental variables
+
+```
 
 
