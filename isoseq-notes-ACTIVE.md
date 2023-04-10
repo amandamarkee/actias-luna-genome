@@ -129,7 +129,7 @@ lima movieX.hifi_reads.bam barcoded_primers.fasta movieX.fl.bam --isoseq
 
 ```
 #!/bin/bash
-#SBATCH --job-name=minimap
+#SBATCH --job-name=lima
 #SBATCH -o luna_iso_lima_%j.out
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=amanda.markee@ufl.edu
@@ -140,12 +140,48 @@ date;hostname;pwd
 
 module load isoseq3
 
-lima /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/bc1001--bc1001/ \
+isoseq lima /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/bc1001--bc1001/ \
 /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/isoseq_primers.fasta \
 /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq/iso_lima/m64219e_220708_202551.instar1.bam
 
-# note, this scripti s for one sample, but need to convert to array with environmental variables
-
+# note, this script is for one sample, but need to convert to array with environmental variables
 ```
 
+## 04/10/2022; Run IsoSeq Refine Step (From isoseq.how)
+
+After running lima, our data now contains full-length reads, but still needs to be refined by:
+
+- trimming of poly(A) tails
+- rapid concatemer identification and removal
+
+_Input_
+The input file for refine is one demultiplexed CCS file with full-length reads and the primer fasta file:
+- <movie.instar>.fl.bam or <movie.instar>.fl.consensusreadset.xml (use .bam in our case)
+- primers.fasta
+
+_Output_
+The following output files of refine contain full-length non-concatemer reads:
+- <movie>.flnc.bam
+- <movie>.flnc.transcriptset.xml
+
+  
+```
+#!/bin/bash
+#SBATCH --job-name=refine
+#SBATCH -o luna_iso_refine_%j.out
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=16gb
+#SBATCH -t 40:00:00
+#SBATCH -c 16
+date;hostname;pwd
+
+module load isoseq3
+
+isoseq refine /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq/iso_lima/m64219e_220708_202551.instar1.bam \
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/isoseq_primers.fasta \
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq/iso_refine/m64219e_220708_202551.instar1.flnc.bam
+
+# note, this script is for one sample, but need to convert to array with environmental variables
+```
 
