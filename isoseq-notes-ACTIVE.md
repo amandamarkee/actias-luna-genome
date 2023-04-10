@@ -147,7 +147,7 @@ isoseq lima /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/bc1001--bc100
 # note, this script is for one sample, but need to convert to array with environmental variables
 ```
 
-## 04/10/2022; Run IsoSeq Refine Step (From isoseq.how)
+## 04/10/2022; Run IsoSeq Refine Step (from [isoseq.how](https://isoseq.how/clustering/cli-workflow.html))
 
 After running lima, our data now contains full-length reads, but still needs to be refined by:
 
