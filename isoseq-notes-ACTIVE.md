@@ -127,6 +127,13 @@ _Note, here we just use --isoseq flag. When making the array script, we should u
 lima movieX.hifi_reads.bam barcoded_primers.fasta movieX.fl.bam --isoseq
 ```
 
+Example of lima code code for one sample:
+```
+lima /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/bc1001--bc1001/m64219e_220708_202551.hifi_reads.bc1001--bc1001.bam \
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/isoseq_primers.fasta \
+/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq/iso_lima/m64219e_220708_202551.instar1.bam --isoseq
+```
+
 ```
 #!/bin/bash
 #SBATCH --job-name=lima
@@ -140,11 +147,12 @@ date;hostname;pwd
 
 module load isoseq3
 
-isoseq lima /blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/bc1001--bc1001/ \
-/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/isoseq_primers.fasta \
-/blue/kawahara/amanda.markee/ICBR/NS-2778/NS2778/1_H06/ACTIVE_aluna_isoseq/iso_lima/m64219e_220708_202551.instar1.bam
+input_bam=${1}
+primer_fasta=${2}
+out_bam_name=${3}
 
-# note, this script is for one sample, but need to convert to array with environmental variables
+lima ${input_bam} ${primer_fasta} ${out_bam_name} --isoseq
+
 ```
 
 ## 04/10/2022; Run IsoSeq Refine Step (from [isoseq.how](https://isoseq.how/clustering/cli-workflow.html))
