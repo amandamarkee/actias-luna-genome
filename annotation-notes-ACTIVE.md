@@ -739,7 +739,7 @@ cat instar1.fq instar2.fq instar3.fq instar4.fq instar5.fq > all.subreads.fastq
 Use Minimap2 to map the transcripts to the genome sequence, and then sort the result.The final output will be called Al_isoseq_final.bam:
 ```
 cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
-sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2 all.subreads.fastq Al_isoseq_final
+sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta all.subreads.fastq Al_isoseq_final
 ```
 
 ```
