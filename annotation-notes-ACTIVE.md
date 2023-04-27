@@ -702,13 +702,28 @@ braker.pl \
 ```
 
 
+********************************** END ISOSEQ TEXT
+
+
+
 ## Step 3 of BRAKER2 Feature Annotation – Running with IsoSeq (long-read) data
 
 For the third run of BRAKER, I am using a new [modified pipeline](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md#braker2) specifically for PacBio HiFi long reads.
 
-From this protocol, I will be picking up starting at the BRAKER2 step, since I have already run BRAKER on protein evidence following Dr. Godfrey's protocol in Step 1. 
 
-## (a) Convert IsoSeq raw .bam reads to .fastq
+## (a) Merge all subreads into a single BAM file
+
+```
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+cat instar1.bam instar2.bam instar3.bam instar4.bam instar5.bam > all.subreads.bam
+```
+
+
+
+
+
+
+
 
 All IsoSeq BRAKER steps will be run in the following directory:
 ```
@@ -736,10 +751,10 @@ cat instar1.fq instar2.fq instar3.fq instar4.fq instar5.fq > all.subreads.fastq
 
 ## (b) Use minimap2 to map transcripts to genome
 
-Use Minimap2 to map the transcripts to the genome sequence, and then sort the result.The final output will be called Al_isoseq_final.bam:
+Use Minimap2 to map the transcripts to the genome sequence, and then sort the result.The final output will be called al_isoseq_mapped.bam:
 ```
 cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
-sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta all.subreads.fastq Al_isoseq_final
+sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta all.subreads.fastq al_isoseq_mapped.bam
 ```
 
 ```
@@ -762,42 +777,20 @@ prefix=${3}
 minimap2 -t 8 -ax map-pb ${genome} ${read} --secondary=no | samtools sort -m 1G -o ${prefix}.bam -T tmp.ali
 ```
 
-## (c) Collapse redundant isoforms in Cupcake
-
-
-Next, we collapse redundant isoforms using a script from Cupcake. Make sure to module load cupcake to have access to the collapse isoforms script. Note: [the GitHub](https://github.com/Magdoll/cDNA_Cupcake/wiki/Cupcake:-supporting-scripts-for-Iso-Seq-after-clustering-step#collapse-redundant-isoforms-has-genome) mentions implementing this as isoseq3? Look into this later.
-
+View the results of the mapping using the following code:
 ```
-module load cupcake
-collapse_isoforms_by_sam.py --input all.subreads.fastq --fq  -s Al_isoseq_final.sam --dun-merge-5-shorter -o cupcake
-
-```
-
-Note: This code gives me the following error, so I have put in a request to HiPerGator to update their isoseq3 module to use instead of Cupcake for isoform collapsing.
-```
-File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 245, in <module>
-    main(args)
-  File "/apps/cupcake/22.0.0/bin/collapse_isoforms_by_sam.py", line 169, in main
-    check_ids_unique(args.input, is_fq=args.fq)
-  File "/apps/cupcake/22.0.0/lib/python3.9/site-packages/cupcake/tofu/utils.py", line 13, in check_ids_unique
-    raise Exception("Duplicate id {0} detected. Abort!".format(r.id))
-Exception: Duplicate id m64219e_220708_202551/155/ccs detected. Abort!
+samtools view -b -u al_isoseq_mapped.bam | head
 ```
 
 
-## (d) File organization
+## (c) Collapse redundant isoforms in IsoSeq3 Collapse
 
-I organized my output files for each braker run in the following directories:
-```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
-```
+Next, we collapse redundant isoforms using IsoSeq3 Collapse function. This used to be done using Cupcake, before it was merged into the IsoSeq3 protocol, following guidance from [here](https://isoseq.how/classification/isoseq-collapse.html). We will use the mapped bam file from the previous minimap2 step as input.
 
-I also moved all of my scripts to this folder:
-```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/scripts
-```
+
+
+
+********************************** END ISOSEQ TEXT
 
 
 ## Evaluate gene models produced by braker2 
