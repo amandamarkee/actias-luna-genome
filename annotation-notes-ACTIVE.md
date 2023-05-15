@@ -1,7 +1,7 @@
 ## _STOP: Please see the [assembly](https://github.com/amandamarkee/actias-luna-genome/blob/main/assembly-notes-ACTIVE.md) note for the first half of the instructions before proceeding_ ##
 
 ## **10/9/2022; Annotation – RepeatModeler2**
-Now that my genome assembly is complete, we have a high-quality and accurate assembly to begin building our annotation from. The ultimate goal is to perform both feature and functional annotation, but we will begin with feature annotation. For my annotation, I will be following [Dr. YiMing Weng's](https://github.com/yimingweng/Kely_genome_project/blob/main/note.md#09072022) and [Dr. Daren Card's](https://darencard.net/blog/2022-07-09-genome-repeat-annotation/) workflow, which is a modified version of the [MAKER](https://darencard.net/blog/2017-05-16-maker-genome-annotation/) annotation protocol. 
+Now that my genome assembly is complete, we have a high-quality and accurate assembly to begin building our annotation from. The ultimate goal is to perform both feature and functional annotation, but we will begin with feature annotation. For my annotation, I will be following [Dr. YiMing Weng's](https://github.com/yimingweng/Kely_genome_project/blob/main/note.md#09072022) following the BRAKER2 protocol.
 
 First, we need to run [RepeatModeler2](https://www.pnas.org/doi/10.1073/pnas.1921046117) to identify and model for repeat elements in the genome.
 
@@ -702,36 +702,19 @@ braker.pl \
 ```
 
 
-********************************** END ISOSEQ TEXT
-
-
-
 ## Step 3 of BRAKER2 Feature Annotation – Running with IsoSeq (long-read) data
 
-For the third run of BRAKER, I am using a new [modified pipeline](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md#braker2) specifically for PacBio HiFi long reads.
+For the third run of BRAKER, I am using a new [modified pipeline](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md#braker2) specifically for PacBio HiFi long reads in annotation. I use this modified pipeline up until the mapping step. For mapping and collapsing, I use [PacBio bulk IsoSeq workflow](https://isoseq.how/classification/workflow.html) using the pbmm and collapse funcitons to ensure script compatibility.
 
 
-## (a) Merge all subreads into a single BAM file
+## (a) Merge all subreads into a single FASTQ file
 
+Note: Files come back from ICBR in the form of .bam files per each barcoded instar. To convert them to FASTQ files, I used samtools bam2fq function:
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
-cat instar1.bam instar2.bam instar3.bam instar4.bam instar5.bam > all.subreads.bam
-```
-
-
-
-
-
-
-
-
-All IsoSeq BRAKER steps will be run in the following directory:
-```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+samtools bam2fq SAMPLE.bam > SAMPLE.fastq
 ```
 
-First I requested a development node, and ran the following commands using the bedtools module to convert all .bam files to .fastq:
-
+This can also be done using bedtools as follows:
 ```
 srundev
 bedtools bamtofastq -i instar1.bam -fq instar1.fq
@@ -739,27 +722,18 @@ bedtools bamtofastq -i instar2.bam -fq instar2.fq
 bedtools bamtofastq -i instar3.bam -fq instar3.fq
 bedtools bamtofastq -i instar4.bam -fq instar4.fq
 bedtools bamtofastq -i instar5.bam -fq instar5.fq
-
-mkdir isoseq_raw_bam 
-mv *.bam isoseq_raw_bam/
 ```
 
-Next, I concatenate all subread libraries (instar1-instar5) files into a single file:
+Once .bam files have been converted to .fq, I used this code to concat each instar into all.subreads.fq file:
 ```
-cat instar1.fq instar2.fq instar3.fq instar4.fq instar5.fq > all.subreads.fastq
-```
-
-## (b) Use minimap2 to map transcripts to genome
-
-Use Minimap2 to map the transcripts to the genome sequence, and then sort the result.The final output will be called al_isoseq_mapped.bam:
-```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
-sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta all.subreads.fastq al_isoseq_mapped.bam
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+cat instar1.fq instar2.fq instar3.fq instar4.fq instar5.fq > all.subreads.fq
 ```
 
+Next, I ran pbmm (PacBio minimap) to map transcripts back to my A.luna masked genome using the following script:
 ```
 #!/bin/bash
-#SBATCH --job-name=%x_minimap_%j
+#SBATCH --job-name=%x_pbmm2_%j
 #SBATCH -o %x_minimap_%j.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=amanda.markee@ufl.edu
@@ -767,33 +741,190 @@ sbatch minimap2.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annot
 #SBATCH -t 24:00:00
 #SBATCH -c 32
 
-module load minimap/2.21
-module load samtools/1.15
+module load pbmm2
+module load isoseq3
 
-genome=${1}
-read=${2}
-prefix=${3}
-
-minimap2 -t 8 -ax map-pb ${genome} ${read} --secondary=no | samtools sort -m 1G -o ${prefix}.bam -T tmp.ali
+pbmm2 align --preset ISOSEQ --sort /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq/all.subreads.bam \
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta \
+al_isoseq_mapped.bam
 ```
 
-View the results of the mapping using the following code:
+After mapping, I use the PacBio IsSeq collapse funciton which serves the same purpose as Cupcake, and collapses redundant IsoForms:
 ```
-samtools view -b -u al_isoseq_mapped.bam | head
+#!/bin/bash
+#SBATCH --job-name=%x_collapse_%j
+#SBATCH -o %x_minimap_%j.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=amanda.markee@ufl.edu
+#SBATCH --mem-per-cpu=8gb
+#SBATCH -t 24:00:00
+#SBATCH -c 32
+
+module load isoseq3
+
+isoseq3 collapse al_isoseq_mapped.bam al_isoseq_collapse.gff
 ```
 
+After collapsing, I return to the modified BRAKER2 pipeline to conduct GeneMarkS-T predictions. I first run the Augustus stringtie2fa.py script within the BRAKER2 pipeline using the masked genome, and output collapsed .gff file from the previous isoseq collapse step
+```
+stringtie2fa.py -g genome.fa -f cupcake.collapsed.gff -o cupcake.fa
+```
 
-## (c) Collapse redundant isoforms in IsoSeq3 Collapse
+stringtie2fa.py script:
+```
+#!/usr/bin/env python3
 
-Next, we collapse redundant isoforms using IsoSeq3 Collapse function. This used to be done using Cupcake, before it was merged into the IsoSeq3 protocol, following guidance from [here](https://isoseq.how/classification/isoseq-collapse.html). We will use the mapped bam file from the previous minimap2 step as input.
+# Author: Katharina J. Hoff
+# E-Mail: katharina.hoff@uni-greifswald.de
+# Last modified on November 8th 2021
+#
+# This Python script extracts exon features from a GTF file, excises
+# corresponding sequence windows from a genome FASTA file, stitches the
+# codingseq parts together, makes reverse complement
+# if required
+# Output file is:
+#    * file with mRNA squences in FASTA format
+# Beware: the script assumes that the gtf input file is sorted by coordinates!
+# This script is also compatible with cupcake gtf format
+
+try:
+    import argparse
+except ImportError:
+    raise ImportError(
+        'Failed to import argparse. Try installing with \"pip3 install argparse\"')
+
+try:
+    import re
+except ImportError:
+    raise ImportError(
+        'Failed to import argparse. Try installing with \"pip3 install re\"')
+
+try:
+    from Bio.Seq import Seq
+    from Bio import SeqIO
+    from Bio.SeqRecord import SeqRecord
+except ImportError:
+    raise ImportError(
+        'Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
 
 
+parser = argparse.ArgumentParser(
+    description='Generate *.codingseq and *.aa FASTA-format files from genes \
+                 in a GTF-file produced by AUGUSTUS auxprogs tool joingenes \
+                 and a corresponding genomic FASTA-file.')
+parser.add_argument('-g', '--genome', required=True,
+                    type=str, help='genome sequence file (FASTA-format)')
+parser.add_argument('-o', '--out', required=True, type=str,
+                    help="name stem pf output file with coding sequences and \
+                    protein sequences (FASTA-format); will be extended by \
+                    .codingseq/.aa")
+parser.add_argument('-p', '--print_format_examples', required=False, action='store_true',
+                    help="Print gtf input format examples, do not perform analysis")
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-f', '--gtf',
+                    type=str, help='file with CDS coordinates (GTF-format)')
+args = parser.parse_args()
 
 
-********************************** END ISOSEQ TEXT
+if args.print_format_examples:
+    print('This script requires an annotation of a transcript with exon ' +
+        'features in GTF format. We here provide a compatible ' +
+        'example. ' +
+        'This script will only process the exon lines. The input data may contain other feature lines that ' +
+        'are ignored.')
+    print('\nGTF format example:\n')
+    print('1\tStringTie\ttranscript\t1555206\t1572018\t1000\t-\t.\tgene_id "STRG.16"; transcript_id "STRG.16.1"; cov "5.737374"; FPKM "5.261884"; TPM "18.775906";\n' +
+         '1\tStringTie\texon\t1555206\t1555441\t1000\t-\t.\tgene_id "STRG.16"; transcript_id "STRG.16.1"; exon_number "1"; cov "6.080509";\n' +
+         '1\tStringTie\texon\t1565008\t1565346\t1000\t-\t.\tgene_id "STRG.16"; transcript_id "STRG.16.1"; exon_number "2"; cov "5.917404";\n' +
+         '1\tStringTie\texon\t1571901\t1572018\t1000\t-\t.\tgene_id "STRG.16"; transcript_id "STRG.16.1"; exon_number "3"; cov "4.533898";\n')
+    print('\nThis script has successfully been tested with GTF format produced by Stringtie2.')
+    exit(0)
+
+# output file names:
+mrnaFile = args.out + ".mrna"
+
+# Read GTF file exon entries for transcripts
+tx2seq = {}
+tx2str = {}
+mrna = {}
+
+if args.gtf:
+    try:
+        with open(args.gtf, "r") as gtf_handle:
+            for line in gtf_handle:
+                if re.match(
+                        r"\S+\t[^\t]+\texon\t\d+\t\d+\t\S+\t\S\t\.\t.*transcript_id \"(\S+)\"", line):
+                    #print("I attempt to store exon info")
+                    seq_id, st, en, stx, tx_id = re.match(
+                        r"(\S+)\t[^\t]+\texon\t(\d+)\t(\d+)\t\S+\t(\S)\t\.\t.*transcript_id \"(\S+)\"", line).groups()
+                    if seq_id not in mrna:
+                        mrna[seq_id] = {}
+                    if tx_id not in mrna[seq_id]:
+                        mrna[seq_id][tx_id] = []
+                    mrna[seq_id][tx_id].append(
+                        {'start': int(st), 'end': int(en), 'strand': stx})
+                    if not tx_id in tx2seq:
+                        tx2seq[tx_id] = seq_id
+                        tx2str[tx_id] = stx
+    except IOError:
+        print("Error: Failed to open file " + args.gtf + "!")
+        exit(1)
+else:
+    print("Error: No annotation file in GTF format was provided!")
+    exit(1)
+
+# Read genome file (single FASTA entries are held in memory, only), extract
+# exon sequence windows
+seq_len = {}
+mrnaseq = {}
+try:
+    with open(args.genome, "r") as genome_handle:
+        for record in SeqIO.parse(genome_handle, "fasta"):
+            seq_len[record.id] = len(record.seq)
+            if record.id in mrna:
+                for tx in mrna[record.id]:
+                    #print("I do something for tx")
+                    if tx not in mrnaseq:
+                        if mrna[record.id][tx][0]['strand'] == '.':
+                            descr = tx + ' strand_unknown'
+                        else:
+                            descr = tx
+                        mrnaseq[tx] = SeqRecord(Seq(""), id=tx, description=descr)
+                    nExons = len(mrna[record.id][tx])
+                    for i in range(0, nExons):
+                        mrna_line = mrna[record.id][tx][i]
+                        mrnaseq[tx].seq += record.seq[mrna_line['start'] - 1:mrna_line['end']]
+                        if i == (nExons - 1) and mrna_line['strand'] == '-':
+                            mrnaseq[tx].seq = mrnaseq[tx].seq.reverse_complement()
+except IOError:
+    print("Error: Failed to open file " + args.genome + "!")
+    exit(1)
+
+# Print mRNA sequences to file
+try:
+    with open(mrnaFile, "w") as mrna_handle:
+        for tx_id, seq_rec in mrnaseq.items():
+            SeqIO.write(seq_rec, mrna_handle, "fasta")
+except IOError:
+    print("Error: Failed to open file " + mrnaFile + "!")
+    exit(1)
+```
+
+After using stringtie2fa.py, I ran GeneMarkST to use the IsoSeq data to train the gene model:
+```
+module load genemark_s/t-3.10.001
+--strand direct collapsed_gms_input.fa.mrna --output gmst.out --format GFF
+```
+
+Lastly, I use the GeneMarkS-T coordinates and the long-read transcripts to create a gene set in GTF format:
+```
+gmst2globalCoords.py -t al_isoseq_collapse.gff -p gmst.out -o gmst.global.gtf -g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta
+```
+
+NOTE: PICK UP HERE TOMORROW. CANT FIND gmst2globalCoords.py EVEN AFTER CLONING BRAKER PIPELINE. SOS
 
 
-## Evaluate gene models produced by braker2 
+## Evaluate gene models produced by Braker2 
 
 To evaluate the success of our gene models (of all 3 BRAKER2 runs), I used the BUSCO Lepidoptera ortholog database (odb10_lepidoptera).
 
