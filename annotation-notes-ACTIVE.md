@@ -916,12 +916,12 @@ module load genemark_s/t-3.10.001
 --strand direct collapsed_gms_input.fa.mrna --output gmst.out --format GFF
 ```
 
-Lastly, I use the GeneMarkS-T coordinates and the long-read transcripts to create a gene set in GTF format:
+Lastly, I use the GeneMarkS-T coordinates and the long-read transcripts to create a gene set in GTF format. Note, the gmst2globalCoords.py script is only in the long_read BRAKER documentation, so you must export this script following the [installation instructions](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md). The output file should be gmst.global.gtf:
 ```
 gmst2globalCoords.py -t al_isoseq_collapse.gff -p gmst.out -o gmst.global.gtf -g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta
 ```
 
-NOTE: PICK UP HERE TOMORROW. CANT FIND gmst2globalCoords.py EVEN AFTER CLONING BRAKER PIPELINE. SOS
+I want to see how the gene model will look by combining all three outputs (protein evidence, RNA-seq evidence, and IsoSeq long read evidence), as well as the IsoSeq long read evidence on it's own. To assess combined model quality, I use TSEBRA to combine the gene models and then run BUSCO on the resulting .gtf file (converted to .aa) to assess quality. Please see the "Evaluate gene models" section for these results.
 
 
 ## Evaluate gene models produced by Braker2 
@@ -1056,10 +1056,9 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/b
 -m protein -c 12
 ```
 
-Note: I will run this once my isoseq3 collapse script is complete (1/19/2023). In the meantime, I'm going to combine both RNAseq and protein evidence BRAKER results in TSEBRA.
 
 
-## Genome Annotation: Combine BRAKER2 outputs in TSEBRA
+## Genome Annotation: Combine BRAKER2 outputs in TSEBRA, and assess combined gene models
 
 ## (a) Combine gene models from protein and transcriptome evidence
 
@@ -1073,50 +1072,43 @@ git clone https://github.com/Gaius-Augustus/TSEBRA
 
 Next, I gather the necessary files as we will use them in the TSEBRA script below:
 
-- augustus.hints.gtf files from BRAKER2 protein evidence
-- augustus.hints.gff files from BRAKER2 RNA evidence
+- augustus.hints.gtf and hintsfile.gff from BRAKER2 protein evidence
+- augustus.hints.gff and hintsfile.gff from BRAKER2 RNA evidence
+- gmst.global.gtf file from BRAKER2 long-read IsoSeq evidence
 - A configuration (.cfg) file as descirbed [here](https://github.com/Gaius-Augustus/TSEBRA#configuration-file) 
 _Note: You can use the default file located in /TSEBRA/config/default.ctg as a start, but the default is quite strict_
 
+Code for combining all evidence (augustus.hints.gtf and hintsfile.gff, then appending the long_read protocol gmst.global.gtf). Output file should be tsebra_longread.gtf:
 ```
-#!/bin/bash
-#SBATCH --job-name=Al_TSEBRA
-#SBATCH -o Al_TSEBRA.log
-#SBATCH --mail-type=FAIL,END
-#SBATCH --mail-user=amanda.markee@ufl.edu
-#SBATCH --mem-per-cpu=4gb
-#SBATCH -t 24:00:00
-#SBATCH -c 24
+cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/bin/tsebra.py -g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.gtf,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.gtf -e /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/hintsfile.gff,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/hintsfile.gff -l /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq/gmst.global.gtf -c /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/config/long_reads.cfg -o tsebra_longread.gtf
+```
 
-module load python3
-
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/bin/tsebra.py \
--g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.gtf,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.gtf
--c /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/config/default.cfg \
--e /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/hintsfile.gff,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/hintsfile.gff \
--o Al_all_combine.gtf
-
+Once I have the combined TSEBRA model containing the long read evidence (.gtf), I have to convert this to .aa format so it can be read by Augustus (BUSCO):
+```
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/scripts/gtf2aa.pl \
 /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Al_all_combine.gtf \
-Al_all_tsebra_aa.fa
+/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/tsebra_longread.gtf \
+tsebra_longread_aa.fa
 ```
 
 Check how many genes: 
 ```
-grep ">" Hl_all_tsebra_aa.fa | wc -l
-34282
+grep ">" tsebra_longread_aa.fa | wc -l
+20144
 ```
-
-
 
 
 ## (b) Run BUSCO on this gene model set
 
 ```
+sbatch all_model_busco.sh
+```
+
+```
 #!/bin/bash
-#SBATCH --job-name=Al_lep_all_genemodel_busco
-#SBATCH -o Al_lep_all_genemodel_busco.log
+#SBATCH --job-name=all_model_busco
+#SBATCH -o all_model_busco.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=amanda.markee@ufl.edu
 #SBATCH --mem-per-cpu=4gb
@@ -1133,20 +1125,11 @@ module load busco/5.3.0
 module load hmmer/3.2.1
 
 # run busco command
-busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/Al_all_tsebra_aa.fa \
- -o ./Al_all_genemod_busco_out \
- -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
- -m protein -c 12
+busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/tsebra_longread_aa.fa \
+-o ./all_model_busco_out \
+-l /data/reference/busco/v5/lineages/endopterygota_odb10 \
+-m protein -c 12
 ```
 
-Results:
 
-	- C:98.9%[S:55.4%,D:43.5%],F:0.5%,M:0.6%,n:5286	   
-	- 5229	Complete BUSCOs (C)			   
-	- 2931	Complete and single-copy BUSCOs (S)	   
-	- 2298	Complete and duplicated BUSCOs (D)	   
-	- 25	Fragmented BUSCOs (F)			   
-	- 32	Missing BUSCOs (M)			   
-	- 5286	Total BUSCO groups searched
-	
-Note: The duplication rate here is reeeeally high. Investigating this further.
+
