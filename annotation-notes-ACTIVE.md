@@ -1099,7 +1099,7 @@ grep ">" tsebra_longread_aa.fa | wc -l
 ```
 
 
-## (b) Run BUSCO on this gene model set
+## (b) Run BUSCO on the combined gene model
 
 ```
 sbatch all_model_busco.sh
@@ -1129,6 +1129,20 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/b
 -o ./all_model_busco_out \
 -l /data/reference/busco/v5/lineages/endopterygota_odb10 \
 -m protein -c 12
+```
+
+The results for running BUSCO 5.3.0 are here:
+```
+***** Results: *****
+
+	C:95.1%[S:75.4%,D:19.7%],F:0.9%,M:4.0%,n:2124	   
+	2020	Complete BUSCOs (C)			   
+	1602	Complete and single-copy BUSCOs (S)	   
+	418	Complete and duplicated BUSCOs (D)	   
+	19	Fragmented BUSCOs (F)			   
+	85	Missing BUSCOs (M)			   
+	2124	Total BUSCO groups searched		   
+
 ```
 
 
