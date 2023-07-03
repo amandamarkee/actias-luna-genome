@@ -8,8 +8,8 @@ First, we need to run [RepeatModeler2](https://www.pnas.org/doi/10.1073/pnas.192
 Navigate to your working directory for annotation, and execute the following script on your genome assembly using the following code:
 ```
 [amanda.markee@login1 aluna_annotation]$ pwd
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation
-sbatch repeatmodeler.sh /blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aluna_final_assembly.fasta aluna_repeatmodeler
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation
+sbatch repeatmodeler.sh /blue/kawahara/amanda.markee/Aluna_genome/blobtools/aluna_final_assembly.fasta aluna_repeatmodeler
 ```
 
 ```
@@ -55,7 +55,7 @@ We will use the output of RepeatModeler2 to run RepeatMasker. Including the repe
 ## Step 1: Feature Annotation – Mask Simple Repeats
 
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker
 sbatch aluna_repeatmask_step1.slurm
 ```
 ```
@@ -84,7 +84,7 @@ RepeatMasker -pa 16 -a -s \
 -noint \
 -no_is \
 -dir aluna_repeatmasker_step1 \
-/blue/kawahara/amanda.markee/insect_genomics_2022/blobtools/aluna_final_assembly.fasta &> aluna_repeatmasker_step1.out
+/blue/kawahara/amanda.markee/Aluna_genome/blobtools/aluna_final_assembly.fasta &> aluna_repeatmasker_step1.out
 ```
 
 ## Step 2: Feature Annotation – Mask Repeats Based on Existing Databases
@@ -92,7 +92,7 @@ RepeatMasker -pa 16 -a -s \
 Once we mask the simple repeat elements, we will use the existing database [Repbase](https://www.girinst.org/repbase/) to continue building our gene model. First we navigate too our RepeatMasker directory, then run the following script in that directory.
 
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker
 sbatch aluna_repeatmask_step2.slurm
 ```
 
@@ -121,7 +121,7 @@ RepeatMasker -pa 16 -a -s \
 -no_is \
 -species Lepidoptera \
 -dir aluna_repeatmasker_step2 \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step1/aluna_final_assembly.fasta.masked &> aluna_repeatmasker_step2.out
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker/aluna_repeatmasker_step1/aluna_final_assembly.fasta.masked &> aluna_repeatmasker_step2.out
 
 mv aluna_repeatmask_step2.out out_files
 ```
@@ -131,7 +131,7 @@ mv aluna_repeatmask_step2.out out_files
 Next, we use the output from RepeatModeler2 (from the beginning of the annotation workflow) to continue masking repeat regions. 
 
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker
 sbatch aluna_repeatmask_step3.slurm
 ```
 
@@ -158,9 +158,9 @@ RepeatMasker -pa 16 -a -s \
 -e RMBlast \
 -gff \
 -no_is \
--lib /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_modeler/aluna-genome-families.prefix.fa.known \
+-lib /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_modeler/aluna-genome-families.prefix.fa.known \
 -dir aluna_repeatmasker_step3 \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step2/aluna_final_assembly.fasta.masked.masked &> aluna_repeatmasker_step3.out
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker/aluna_repeatmasker_step2/aluna_final_assembly.fasta.masked.masked &> aluna_repeatmasker_step3.out
 
 mv aluna_repeatmask_step3.out aluna_repeatmasker_step3
 ```
@@ -169,8 +169,8 @@ mv aluna_repeatmask_step3.out aluna_repeatmasker_step3
 The final step is to calculate the masking percentage to determine the soft masking rate vs. the hard masking rate. I used the following script.
 
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step3
-bash /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/repeat_masker/aluna_repeatmasker_step3/maskrate.sh aluna_final_assembly.fasta.masked.masked.masked
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker/aluna_repeatmasker_step3
+bash /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/repeat_masker/aluna_repeatmasker_step3/maskrate.sh aluna_final_assembly.fasta.masked.masked.masked
 ```
 
 ```
@@ -209,7 +209,7 @@ During a feature annotation, we can use multiple pieces of evidence to build and
 
 All FunAnnotate work will be done in this directory
 ```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/funannotate
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/funannotate
 ```
 
 First, we must set up Funannotate using the script below to build the appropriate environment in HiPerGator.
@@ -336,7 +336,7 @@ However this is where I am experiencing issues with the protein database that Fu
 [amanda.markee@login1 archive]$ cat funannotate_predict_55173243.log 
 Mon Jan  9 17:25:03 EST 2023
 c0709a-s3.ufhpc
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/funannotate/predict
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/funannotate/predict
 -------------------------------------------------------
 [Jan 09 05:25 PM]: OS: Red Hat Enterprise Linux Server 7.9, 64 cores, ~ 527 GB RAM. Python: 3.8.13
 [Jan 09 05:25 PM]: Running funannotate v1.8.13
@@ -389,7 +389,7 @@ Output files: https://github.com/Gaius-Augustus/BRAKER#output-of-braker
 All BRAKER2 annotation will be done in the following directory:
 
 ```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2
 ```
 
 Below is a complete list of allinput files and their names used in this annotation:
@@ -446,7 +446,7 @@ grep ">" B_mori_protein.fasta | wc -l
 Use the following script execution on the both the masked genome and protein fasta as input files:
 
 ```
-sbatch -J Al_ProtHint prothint.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/B_mori_protein.fasta
+sbatch -J Al_ProtHint prothint.sh /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/B_mori_protein.fasta
 ```
 
 ```
@@ -476,7 +476,7 @@ prothint.py --threads ${SLURM_CPUS_ON_NODE:-1} ${genome} ${protein}
 Now that the ProtHint .gff file is completed, we can use this as protein evidence for runnning BRAKER2. Use the following command to execute the code below it.
 
 ```
-sbatch -J Al_prot_braker2 Al_braker2_protein.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/prothint_augustus.gff Actias_luna
+sbatch -J Al_prot_braker2 Al_braker2_protein.sh /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/prothint_augustus.gff Actias_luna
 ```
 ```
 #!/bin/bash
@@ -507,13 +507,13 @@ braker.pl \
 Directories for running BRAKER with RNAseq data:
 ```
 ### raw RNAseq data files
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/trimmomatic/RAW_rnaseq 
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/trimmomatic/RAW_rnaseq 
 
 ### trimmed RNAseq data files
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/trimmomatic/trimmed 
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/trimmomatic/trimmed 
 
 ### parent folder for scripts and outputs related to braker
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2 
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2 
 ```
 
 List of RNAseq files and important metadata:
@@ -627,8 +627,8 @@ Eggs (luna_03)
 I created a braker folder for the RNA evidence run and moved these files there:
 
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna
-mv /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/trimmomatic/RAW_rnaseq/TRIMMED/luna_* /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna
+mv /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/trimmomatic/RAW_rnaseq/TRIMMED/luna_* /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna
 ```
 
 ## (c) Run hisat2 to align transcripts to the genome assembly
@@ -649,15 +649,15 @@ I use the following script, with the combined cat files above as my transcript i
 module load hisat2
 module load samtools
 
-hisat2-build /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/Al_index
+hisat2-build /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna/Al_index
 
-for sample in $(ls /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/*fastq.gz | cut -d "_" -f 1,2,3,4,5,6,7 | sort | uniq)
+for sample in $(ls /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna/*fastq.gz | cut -d "_" -f 1,2,3,4,5,6,7 | sort | uniq)
 do
     fq1=$(ls ${sample}_R1*)
     fq2=$(ls ${sample}_R2*)
     name=$(echo ${sample} | cut -d "_" -f 1,2,3)
     hisat2 -p 32 \
-    -x /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/Al_index \
+    -x /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna/Al_index \
     -1 ${fq1} -2 ${fq2} --phred33 --rna-strandness FR | samtools sort -@ 10 -O BAM -o Al_Al_aln.bam
 done
 ```
@@ -674,7 +674,7 @@ The .log output file will contain mapping prercentages. For these files the mapp
 
 Lastly, I ran BRAKER with the output from hisat2 using the following command and script:
 
-```sbatch -J Al_braker_RNAseq /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/scripts/braker2_RNAseq.sh /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta aluna```
+```sbatch -J Al_braker_RNAseq /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/scripts/braker2_RNAseq.sh /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta aluna```
 
 ```bash
 #!/bin/bash
@@ -695,9 +695,9 @@ module load conda
 module load braker/2.1.6
 
 braker.pl \
---AUGUSTUS_CONFIG_PATH=/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config \
+--AUGUSTUS_CONFIG_PATH=/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Augustus/config \
 --genome=${genome} --species ${species} \
---bam=/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Al.Al.aln.bam \
+--bam=/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Al.Al.aln.bam \
 --softmasking --gff3 --cores 32 --AUGUSTUS_ab_initio
 ```
 
@@ -726,7 +726,7 @@ bedtools bamtofastq -i instar5.bam -fq instar5.fq
 
 Once .bam files have been converted to .fq, I used this code to concat each instar into all.subreads.fq file:
 ```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_isoseq
 cat instar1.fq instar2.fq instar3.fq instar4.fq instar5.fq > all.subreads.fq
 ```
 
@@ -744,8 +744,8 @@ Next, I ran pbmm (PacBio minimap) to map transcripts back to my A.luna masked ge
 module load pbmm2
 module load isoseq3
 
-pbmm2 align --preset ISOSEQ --sort /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq/all.subreads.bam \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta \
+pbmm2 align --preset ISOSEQ --sort /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_isoseq/all.subreads.bam \
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta \
 al_isoseq_mapped.bam
 ```
 
@@ -918,7 +918,7 @@ module load genemark_s/t-3.10.001
 
 Lastly, I use the GeneMarkS-T coordinates and the long-read transcripts to create a gene set in GTF format. Note, the gmst2globalCoords.py script is only in the long_read BRAKER documentation, so you must export this script following the [installation instructions](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md). The output file should be gmst.global.gtf:
 ```
-gmst2globalCoords.py -t al_isoseq_collapse.gff -p gmst.out -o gmst.global.gtf -g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta
+gmst2globalCoords.py -t al_isoseq_collapse.gff -p gmst.out -o gmst.global.gtf -g /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta
 ```
 
 I want to see how the gene model will look by combining all three outputs (protein evidence, RNA-seq evidence, and IsoSeq long read evidence), as well as the IsoSeq long read evidence on it's own. To assess combined model quality, I use TSEBRA to combine the gene models and then run BUSCO on the resulting .gtf file (converted to .aa) to assess quality. Please see the "Evaluate gene models" section for these results.
@@ -946,15 +946,15 @@ sbatch Al_Bm_prot_model_busco.sh
 
 # define configure file for BUSCO and augustus
 # For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
-export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
-export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/Aluna_genome/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Augustus/config"
 
 # load busco, make sure this is the latest version
 module load busco/5.3.0
 module load hmmer/3.2.1
 
 # run busco command
-busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.aa \
+busco -f -i /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_prot/augustus.hints.aa \
  -o ./Al_Bm_genemod_busco_out \
  -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
  -m protein -c 12
@@ -994,15 +994,15 @@ sbatch Al_RNAseq_model_busco.sh
 
 # define configure file for BUSCO and augustus
 # For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
-export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
-export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/Aluna_genome/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Augustus/config"
 
 # load busco, make sure this is the latest version
 module load busco/5.3.0
 module load hmmer/3.2.1
 
 # run busco command
-busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.aa \
+busco -f -i /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.aa \
  -o ./Al_RNA_genemod_busco_out \
  -l /data/reference/busco/v5/lineages/lepidoptera_odb10 \
  -m protein -c 12 
@@ -1042,15 +1042,15 @@ sbatch Al_IsoSeq_model_busco.sh
 
 # define configure file for BUSCO and augustus
 # For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
-export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
-export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/Aluna_genome/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Augustus/config"
 
 # load busco, make sure this is the latest version
 module load busco/5.3.0
 module load hmmer/3.2.1
 
 # run busco command
-busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq/augustus.hints.aa \
+busco -f -i /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_isoseq/augustus.hints.aa \
 -o ./Al_IsoSeq_genemod_busco_out \
 -l /data/reference/busco/v5/lineages/endopterygota_odb10 \
 -m protein -c 12
@@ -1066,7 +1066,7 @@ busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/b
 
 First I cloned the TSEBRA directory into my working annotation directory on the cluster:
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/tsebra
 git clone https://github.com/Gaius-Augustus/TSEBRA
 ```
 
@@ -1080,15 +1080,15 @@ _Note: You can use the default file located in /TSEBRA/config/default.ctg as a s
 
 Code for combining all evidence (augustus.hints.gtf and hintsfile.gff, then appending the long_read protocol gmst.global.gtf). Output file should be tsebra_longread.gtf:
 ```
-cd /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/bin/tsebra.py -g /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.gtf,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/augustus.hints.gtf -e /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_rna/braker_rna_out/hintsfile.gff,/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_prot/hintsfile.gff -l /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/braker_isoseq/gmst.global.gtf -c /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/config/long_reads.cfg -o tsebra_longread.gtf
+cd /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/tsebra/TSEBRA
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/tsebra/TSEBRA/bin/tsebra.py -g /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna/braker_rna_out/augustus.hints.gtf,/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_prot/augustus.hints.gtf -e /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_rna/braker_rna_out/hintsfile.gff,/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_prot/hintsfile.gff -l /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/braker_isoseq/gmst.global.gtf -c /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/tsebra/TSEBRA/config/long_reads.cfg -o tsebra_longread.gtf
 ```
 
 Once I have the combined TSEBRA model containing the long read evidence (.gtf), I have to convert this to .aa format so it can be read by Augustus (BUSCO):
 ```
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/scripts/gtf2aa.pl \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/masked_genome.fasta \
-/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/tsebra_longread.gtf \
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Augustus/scripts/gtf2aa.pl \
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/masked_genome.fasta \
+/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/tsebra/TSEBRA/tsebra_longread.gtf \
 tsebra_longread_aa.fa
 ```
 
@@ -1117,15 +1117,15 @@ sbatch all_model_busco.sh
 
 # define configure file for BUSCO and augustus
 # For augustus, if encounter an authorization issue (error pops up when running busco), try to download the augustus repo and use its config dir
-export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_assembly/hifiasm/BUSCO/config.ini"
-export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/Augustus/config"
+export BUSCO_CONFIG_FILE="/blue/kawahara/amanda.markee/Aluna_genome/aluna_assembly/hifiasm/BUSCO/config.ini"
+export AUGUSTUS_CONFIG_PATH="/blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/Augustus/config"
 
 # load busco, make sure this is the latest version
 module load busco/5.3.0
 module load hmmer/3.2.1
 
 # run busco command
-busco -f -i /blue/kawahara/amanda.markee/insect_genomics_2022/aluna_annotation/braker2/tsebra/TSEBRA/tsebra_longread_aa.fa \
+busco -f -i /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/tsebra/TSEBRA/tsebra_longread_aa.fa \
 -o ./all_model_busco_out \
 -l /data/reference/busco/v5/lineages/endopterygota_odb10 \
 -m protein -c 12
