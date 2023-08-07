@@ -913,7 +913,7 @@ except IOError:
 After using stringtie2fa.py, I ran GeneMarkST to use the IsoSeq data to train the gene model:
 ```
 module load genemark_s/t-3.10.001
---strand direct collapsed_gms_input.fa.mrna --output gmst.out --format GFF
+gmst.pl --strand direct cupcake.fa.mrna --output gmst.out --format GFF
 ```
 
 Lastly, I use the GeneMarkS-T coordinates and the long-read transcripts to create a gene set in GTF format. Note, the gmst2globalCoords.py script is only in the long_read BRAKER documentation, so you must export this script following the [installation instructions](https://github.com/Gaius-Augustus/BRAKER/blob/master/docs/long_reads/long_read_protocol.md). The output file should be gmst.global.gtf:
