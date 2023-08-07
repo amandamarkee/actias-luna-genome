@@ -749,11 +749,11 @@ pbmm2 align --preset ISOSEQ --sort /blue/kawahara/amanda.markee/Aluna_genome/alu
 al_isoseq_mapped.bam
 ```
 
-After mapping, I use the PacBio IsSeq collapse funciton which serves the same purpose as Cupcake, and collapses redundant IsoForms:
+After mapping, I use the PacBio IsoSeq collapse funciton which serves the same purpose as Cupcake, and collapses redundant IsoForms:
 ```
 #!/bin/bash
 #SBATCH --job-name=%x_collapse_%j
-#SBATCH -o %x_minimap_%j.log
+#SBATCH -o %x_collapse_%j.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=amanda.markee@ufl.edu
 #SBATCH --mem-per-cpu=8gb
