@@ -1062,7 +1062,7 @@ busco -f -i /blue/kawahara/amanda.markee/Aluna_genome/aluna_annotation/braker2/b
 
 ## (a) Combine gene models from protein and transcriptome evidence
 
-[TSEBRA Github](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jmor.21510) is a transcript selector that allows you to combine the Braker outputs from different evidence into a single list of transcripts / predicted amino acid sequences.
+[TSEBRA Github](https://github.com/Gaius-Augustus/TSEBRA) is a transcript selector that allows you to combine the Braker outputs from different evidence into a single list of transcripts / predicted amino acid sequences.
 
 First I cloned the TSEBRA directory into my working annotation directory on the cluster:
 ```
